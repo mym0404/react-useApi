@@ -93,7 +93,7 @@ const initialState: State = {
   unsubscribe: null,
 };
 
-const useApi = <ResponseData>(
+const useRest = <ResponseData>(
   api: ApiResult<ResponseData>,
   dependencies: any[] = [],
   cold = false,
@@ -153,4 +153,4 @@ const useApi = <ResponseData>(
   return { ...state };
 };
 
-export default useApi;
+export default useRest;

@@ -1,5 +1,5 @@
 {
-  "name": "use-api",
+  "name": "react-use-rest",
   "version": "1.0.0-alpha01",
   "description": "Custom React hook for REST network call",
   "main": "dist/index.js",

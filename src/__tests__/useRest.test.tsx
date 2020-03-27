@@ -1,6 +1,4 @@
-import { ApiResult } from '../internal/ApiClient';
-import { renderHook } from '@testing-library/react-hooks';
-import useApi from '../useApi';
+import { ApiResult } from '..';
 
 type ResponseType = {
   name: string;
@@ -11,7 +9,7 @@ let mockUnsubscribe = jest.fn();
 let mockCall = jest.fn();
 let apiResult: ApiResult<ResponseType>;
 
-describe('useApi', () => {
+describe('useRest', () => {
   beforeEach(() => {
     apiResult = [mockCall, mockUnsubscribe];
     mockUnsubscribe.mockReset();
@@ -21,7 +19,7 @@ describe('useApi', () => {
   it('', () => {});
 
   // it('render success', async () => {
-  //   const { result, waitForNextUpdate } = renderHook(() => useApi(apiResult, [], true));
+  //   const { result, waitForNextUpdate } = renderHook(() => useRest(apiResult, [], true));
   //   await waitForNextUpdate();
   //   expect(result.current).toBeTruthy();
   // });
@@ -33,7 +31,7 @@ describe('useApi', () => {
   //     },
   //     waitForNextUpdate,
   //     waitForValueToChange,
-  //   } = renderHook(() => useApi(apiResult, []));
+  //   } = renderHook(() => useRest(apiResult, []));
   //
   //   expect(name).toBeUndefined();
   //   expect(age).toBeUndefined();

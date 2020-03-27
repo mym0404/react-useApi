@@ -1,8 +1,8 @@
-import { clearApiDefaultSettings, setApiDefaultSettings } from '..';
+import { clearApiDefaultSettings, setApiDefaultSettings } from '../index';
 
 import { FetchMock } from 'jest-fetch-mock';
 import { JSONCandidate } from '../internal/convertObjectKeysCamelCaseFromSnakeCase';
-import { ResponseInterceptorAddOn } from '..';
+import { ResponseInterceptorAddOn } from '../index';
 import RestClient from '../RestAdapter';
 
 jest.useRealTimers();
