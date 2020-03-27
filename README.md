@@ -1,4 +1,4 @@
-# useApi [WIP, also README is WIP]
+# useRest [WIP, also README is WIP]
 
 ## Usage
 
