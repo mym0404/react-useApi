@@ -25,8 +25,10 @@
   "author": "dooboolab",
   "license": "MIT",
   "peerDependencies": {
-    "react": "*",
-    "react-native": ">=0.59"
+    "react": ">16.8.0",
+    "react-native": ">=0.59",
+    "abortcontroller-polyfill": "^1.4.0",
+    "url": "^0.11.0"
   },
   "dependencies": {
     "abortcontroller-polyfill": "^1.4.0",
@@ -47,7 +49,8 @@
     "jest-fetch-mock": "^3.0.3",
     "prettier": "^1.19.1",
     "prettier-plugin-import-sort": "^0.0.3",
-    "react": "^16.13.0",
+    "react": "16.13.1",
+    "react-native": "0.62.0",
     "react-test-renderer": "^16.13.0",
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.3"

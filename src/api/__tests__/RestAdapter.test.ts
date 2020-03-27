@@ -178,6 +178,15 @@ describe('Call - ', () => {
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
   });
 
+  it('[GIVEN] baseUrl set [THEN] call success', async () => {
+    setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/', logging: true });
+    mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
+    const [dataPromise] = RestClient.GET<{ my_name: string }>('getMyName');
+    const data = await dataPromise();
+    expect(data.my_name).toBe('mj');
+    clearApiDefaultSettings();
+  });
+
   describe.each(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])('RestAdapter[%p] - ', (restMethod): void => {
     it('[GIVEN] application/json [THEN] should be success', async () => {
       const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('');

@@ -1,6 +1,5 @@
 import { constructUriWithQueryParams } from '../constructUriWithQueryParams';
 
-
 it('without params should be same', () => {
   const uri = 'https://www.google.com/';
 
@@ -30,4 +29,14 @@ it('same params should be merged with second argument data', () => {
 it('invoke error should be same', () => {
   const errorUri = 'kalj2lkdalkwd';
   expect(constructUriWithQueryParams(errorUri)).toBe(errorUri);
+});
+
+it('', () => {
+  const constructedUri = constructUriWithQueryParams(
+    'policy/customer/',
+    undefined,
+    'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/',
+    true,
+  );
+  expect(constructedUri).toBe('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/policy/customer/');
 });

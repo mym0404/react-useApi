@@ -1,8 +1,13 @@
-import { URL } from 'url';
+import { Url } from 'url';
 
-export function constructUriWithQueryParams(uri: string, queryParams?: object, baseUrl = ''): string {
+export function constructUriWithQueryParams(
+  uri: string,
+  queryParams?: object,
+  baseUrl = '',
+  loggingError = false,
+): string {
   try {
-    const url: URL = new URL(baseUrl + uri);
+    const url: Url = new Url(baseUrl + uri);
 
     const paramsFromUri = url.searchParams;
     const params = new URLSearchParams();
@@ -29,6 +34,9 @@ export function constructUriWithQueryParams(uri: string, queryParams?: object, b
       return encodeURI(baseUrl + uri + '?' + params.toString());
     }
   } catch (e) {
+    if (loggingError) {
+      console.warn(e);
+    }
     return uri;
   }
 }
