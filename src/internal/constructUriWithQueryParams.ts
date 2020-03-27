@@ -1,37 +1,44 @@
-import { URL } from 'url';
-
 export function constructUriWithQueryParams(
   uri: string,
   queryParams?: object,
   baseUrl = '',
   loggingError = false,
 ): string {
+  const parameters = new Map<string, string>();
+
   try {
-    const url: URL = new URL(baseUrl + uri);
+    const url = encodeURI(baseUrl + uri);
 
-    const paramsFromUri = url.searchParams;
-    const params = new URLSearchParams();
-
+    const questionMarkIndex = url.indexOf('?');
+    if (questionMarkIndex !== -1) {
+      url
+        .slice(questionMarkIndex + 1)
+        .split('&')
+        .forEach((raw) => {
+          const [key, value] = raw.split('=');
+          parameters.set(key, value);
+        });
+    }
     queryParams &&
       Object.entries(queryParams).forEach(([key, value]) => {
-        params.append(key, value + '');
+        parameters.set(key, value);
       });
 
-    paramsFromUri.forEach((value, key) => {
-      if (!params.has(key)) {
-        params.set(key, value);
-      }
-    });
-
-    const questionMarkIndex = uri.indexOf('?');
+    let urlWithoutQueryParams: string;
     if (questionMarkIndex !== -1) {
-      uri = uri.substring(0, questionMarkIndex);
+      urlWithoutQueryParams = url.slice(0, questionMarkIndex);
+    } else {
+      urlWithoutQueryParams = url;
     }
 
-    if (params[Symbol.iterator]().next().done) {
-      return encodeURI(baseUrl + uri);
+    if (parameters.size === 0) {
+      return urlWithoutQueryParams;
     } else {
-      return encodeURI(baseUrl + uri + '?' + params.toString());
+      let queryParamsString = '';
+      parameters.forEach((value, key) => {
+        queryParamsString += `${encodeURIComponent(key)}=${encodeURIComponent(value)}&`;
+      });
+      return urlWithoutQueryParams + '?' + queryParamsString.slice(0, -1);
     }
   } catch (e) {
     if (loggingError) {
