@@ -23,8 +23,8 @@ type State<ResponseData = JSONCandidate> = {
   success: boolean;
   loading: boolean;
   error: Error | null;
-  unsubscribe: (() => void) | null;
-  call: (() => void) | null;
+  unsubscribe: () => void;
+  call: () => void;
 } & {
   [P in keyof ResponseData]?: ResponseData[P];
 };
@@ -86,17 +86,19 @@ const callFail: ActionCreator<Error> = (error: Error) => ({
 });
 
 const initialState: State = {
-  call: null,
+  call: (): void => {},
   error: null,
   loading: false,
   success: false,
-  unsubscribe: null,
+  unsubscribe: (): void => {},
 };
 
 const useRest = <ResponseData>(
   api: ApiResult<ResponseData>,
   dependencies: any[] = [],
   cold = false,
+  onSuccess: (data: ResponseData) => void = (): void => {},
+  onFail: (e: Error) => void = (): void => {},
 ): State<ResponseData> => {
   const [state, dispatch] = useReducer<(prevState: State<ResponseData>, action: Action) => State<ResponseData>>(
     reducer,
@@ -113,7 +115,8 @@ const useRest = <ResponseData>(
         const [call, cancel] = api;
 
         dispatch(
-          setUnsubscribe(() => (): void => {
+          setUnsubscribe(() => {
+            console.log('unsubscribe');
             cancel();
           }),
         );
@@ -123,22 +126,28 @@ const useRest = <ResponseData>(
             setCall(
               async (): Promise<void> => {
                 try {
+                  state.unsubscribe();
                   dispatch(callStart());
                   const data = await call();
                   dispatch(callSuccess(data));
+                  onSuccess(data);
                 } catch (e) {
                   dispatch(callFail(e));
+                  onFail(e);
                 }
               },
             ),
           );
         } else {
           try {
+            state.unsubscribe();
             dispatch(callStart());
             const data = await call();
             dispatch(callSuccess(data));
+            onSuccess(data);
           } catch (e) {
             dispatch(callFail(e));
+            onFail(e);
           }
         }
       };
@@ -148,7 +157,7 @@ const useRest = <ResponseData>(
     return (): void => {
       state.unsubscribe && state.unsubscribe();
     };
-  }, [api, cold, dependencies, state]);
+  }, [api, cold, dependencies, state, onFail, onSuccess]);
 
   return { ...state };
 };

@@ -98,9 +98,17 @@ describe('Call - ', () => {
     clearApiDefaultSettings();
   });
 
-  it('[WHEN] unsubscribe [THEN] abort function of AbortController will be invoked', () => {
-    const [, unsubscribe] = RestClient.GET('');
+  it('[WHEN] unsubscribe [THEN] abort function of AbortController will be invoked', async () => {
+    const [dataPromise, unsubscribe] = RestClient.GET('');
     unsubscribe();
+
+    expect.assertions(2);
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(e.name).toBe('AbortError');
+      expect(e.message).toBe('The operation was aborted. ');
+    }
   });
 
   it.each([true, false])(

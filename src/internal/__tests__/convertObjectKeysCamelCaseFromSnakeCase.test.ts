@@ -1,6 +1,34 @@
 import toCamelCase from '../convertObjectKeysCamelCaseFromSnakeCase';
 
 describe('camelCase function test', (): void => {
+  it('general object to camelCase', (): void => {
+    expect(
+      toCamelCase({
+        leveltest_srl: 31,
+        order: 2,
+        expected_start_num: 2,
+        expected_end_num: 2,
+        expected_start_time: 2,
+        expected_end_time: 2,
+        ai_accuracy_goal: 2,
+        complete: true,
+        user_srl: 16,
+        leveltest_units: ['2001', '2002'],
+      }),
+    ).toEqual({
+      leveltestSrl: 31,
+      order: 2,
+      expectedStartNum: 2,
+      expectedEndNum: 2,
+      expectedStartTime: 2,
+      expectedEndTime: 2,
+      aiAccuracyGoal: 2,
+      complete: true,
+      userSrl: 16,
+      leveltestUnits: ['2001', '2002'],
+    });
+  });
+
   it('change object to camelCase in nested object', (): void => {
     const obj = { a_b_c: { c_c_c: 1, b_b_b: [{ d_d_d: 1 }, 2, 3] } };
 
