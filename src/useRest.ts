@@ -1,4 +1,4 @@
-import { ApiResult, Call, Unsubscribe } from './internal/ApiClient';
+import { ApiResult, Call } from './internal/ApiClient';
 import { useEffect, useReducer, useRef } from 'react';
 
 import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
@@ -23,20 +23,17 @@ type State<ResponseData = JSONCandidate> = {
   success: boolean;
   loading: boolean;
   error: Error | null;
-  unsubscribe: () => void;
   call: () => void;
 } & {
   [P in keyof ResponseData]?: ResponseData[P];
 };
 
-type ActionTypes = 'SetUnsubscribe' | 'SetCall' | 'CallStart' | 'CallSuccess' | 'CallFail';
+type ActionTypes = 'SetCall' | 'CallStart' | 'CallSuccess' | 'CallFail';
 type Action<Payload = any> = { type: ActionTypes; payload?: Payload };
 type ActionCreator<Payload = undefined> = (...args) => Action<Payload>;
 
 const reducer = <ResponseData>(state: State<ResponseData>, { type, payload }: Action): State<ResponseData> => {
   switch (type) {
-    case 'SetUnsubscribe':
-      return { ...state, unsubscribe: payload };
     case 'SetCall':
       return { ...state, call: payload };
     case 'CallStart':
@@ -65,10 +62,6 @@ const reducer = <ResponseData>(state: State<ResponseData>, { type, payload }: Ac
   return state;
 };
 
-const setUnsubscribe: ActionCreator<Unsubscribe> = (unsubscribe: Unsubscribe) => ({
-  type: 'SetUnsubscribe',
-  payload: unsubscribe,
-});
 const setCall: ActionCreator<Call> = (call: Call) => ({
   type: 'SetCall',
   payload: call,
@@ -90,7 +83,6 @@ const initialState: State = {
   error: null,
   loading: false,
   success: false,
-  unsubscribe: (): void => {},
 };
 
 const useRest = <ResponseData>(
@@ -100,6 +92,9 @@ const useRest = <ResponseData>(
   onSuccess: (data: ResponseData) => void = (): void => {},
   onFail: (e: Error) => void = (): void => {},
 ): State<ResponseData> => {
+  const unmounted = useRef(false);
+  const fetching = useRef(false);
+
   const [state, dispatch] = useReducer<(prevState: State<ResponseData>, action: Action) => State<ResponseData>>(
     reducer,
   initialState,
@@ -112,52 +107,59 @@ const useRest = <ResponseData>(
       previousDependencies.current = dependencies;
 
       const callApi = async (): Promise<void> => {
-        const [call, cancel] = api;
-
-        dispatch(
-          setUnsubscribe(() => {
-            console.log('unsubscribe');
-            cancel();
-          }),
-        );
+        const [call] = api;
 
         if (cold) {
           dispatch(
             setCall(
               async (): Promise<void> => {
                 try {
-                  state.unsubscribe();
+                  if (fetching.current) {
+                    return;
+                  }
+                  fetching.current = true;
                   dispatch(callStart());
                   const data = await call();
-                  dispatch(callSuccess(data));
-                  onSuccess(data);
+                  if (!unmounted.current) {
+                    dispatch(callSuccess(data));
+                    onSuccess(data);
+                  }
+                  fetching.current = false;
                 } catch (e) {
-                  dispatch(callFail(e));
-                  onFail(e);
+                  if (!unmounted.current) {
+                    dispatch(callFail(e));
+                    onFail(e);
+                  }
+                  fetching.current = false;
                 }
               },
             ),
           );
         } else {
           try {
-            state.unsubscribe();
             dispatch(callStart());
             const data = await call();
-            dispatch(callSuccess(data));
-            onSuccess(data);
+            if (!unmounted.current) {
+              dispatch(callSuccess(data));
+              onSuccess(data);
+            }
           } catch (e) {
-            dispatch(callFail(e));
-            onFail(e);
+            if (!unmounted.current) {
+              dispatch(callFail(e));
+              onFail(e);
+            }
           }
         }
       };
-
       callApi().then();
     }
+  }, [api, cold, dependencies, state, onFail, onSuccess, unmounted]);
+
+  useEffect(() => {
     return (): void => {
-      state.unsubscribe && state.unsubscribe();
+      unmounted.current = true;
     };
-  }, [api, cold, dependencies, state, onFail, onSuccess]);
+  }, []);
 
   return { ...state };
 };

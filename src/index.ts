@@ -13,5 +13,6 @@ export {
   RequestOptionsInterceptor,
   ResponseDataInterceptor,
   Settings,
+  Call,
 } from './internal/ApiClient';
 export { default as useRest } from './useRest';
