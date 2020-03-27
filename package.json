@@ -1,38 +1,31 @@
 {
-  "name": "dooboo-hooks",
-  "version": "0.0.1",
-  "description": "No description",
+  "name": "use-api",
+  "version": "1.0.0-alpha01",
+  "description": "Custom React hook for REST network call",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "postinstall": "dooboolab-welcome postinstall",
+  "homepage": "https://github.com/mym0404/useApi",
   "scripts": {
     "check": "yarn lint && yarn tsc && yarn jest --coverage -u",
-    "build": "tsc",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "test": "jest",
-    "test:typescript": "tsc --noEmit",
-    "tsc:sync": "npx typesync",
-    "tsc": "tsc",
-    "validate": "npm run lint && npm run test:typescript && npm run test"
+    "test": "jest"
   },
+  "private": false,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dooboolab/dooboo-hooks"
+    "url": "https://github.com/mym0404/useApi"
   },
   "keywords": [
     "react-native"
   ],
-  "author": "dooboolab",
+  "author": "MJ Studio <mym0404@gmail.com>",
   "license": "MIT",
   "peerDependencies": {
     "react": ">16.8.0",
-    "react-native": ">=0.59",
-    "abortcontroller-polyfill": "^1.4.0",
-    "url": "^0.11.0"
+    "react-native": ">=0.59"
   },
   "dependencies": {
     "abortcontroller-polyfill": "^1.4.0",
-    "dooboolab-welcome": "^1.1.1",
     "url": "^0.11.0"
   },
   "devDependencies": {

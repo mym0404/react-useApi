@@ -1,4 +1,4 @@
-import { Url } from 'url';
+import { URL } from 'url';
 
 export function constructUriWithQueryParams(
   uri: string,
@@ -7,7 +7,7 @@ export function constructUriWithQueryParams(
   loggingError = false,
 ): string {
   try {
-    const url: Url = new Url(baseUrl + uri);
+    const url: URL = new URL(baseUrl + uri);
 
     const paramsFromUri = url.searchParams;
     const params = new URLSearchParams();
