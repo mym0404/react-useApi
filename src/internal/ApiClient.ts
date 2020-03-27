@@ -186,17 +186,12 @@ function request<ResponseData = {}>(
             try {
               const { queryParams, body, files, headers } = options;
 
-              console.log('🌈uri', url);
-              console.log('🌈settings : ', JSON.stringify(defaultSettings, null, 2));
-
               const constructedUri = constructUriWithQueryParams(
                 url,
                 queryParams,
                 defaultSettings.baseUrl,
                 defaultSettings.logging,
               );
-
-              console.log('🌈constructedUri : ', constructedUri);
 
               const requestInitWithoutBody: RequestInit = {
                 headers: headers || defaultSettings.headers,
