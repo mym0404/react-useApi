@@ -48,9 +48,11 @@ describe('camelCase function test', (): void => {
     ]);
   });
   it('change array to camelCase2', (): void => {
-    const arr = [1, 2, 3, 4];
+    const numberArray = [1, 2, 3, 4];
+    expect(toCamelCase(numberArray)).toEqual([1, 2, 3, 4]);
 
-    expect(toCamelCase(arr)).toEqual([1, 2, 3, 4]);
+    const stringArray = ['2001', '2002', '2003'];
+    expect(toCamelCase(stringArray)).toEqual(['2001', '2002', '2003']);
   });
 
   it('change object containing non-plain-object to camelCase', (): void => {
