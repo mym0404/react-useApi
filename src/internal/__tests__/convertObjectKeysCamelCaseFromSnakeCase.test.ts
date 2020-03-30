@@ -47,6 +47,11 @@ describe('camelCase function test', (): void => {
       { aBC: { cCC: 1, bBB: [{ dDD: 1 }, 2, 3] } },
     ]);
   });
+  it('change array to camelCase2', (): void => {
+    const arr = [1, 2, 3, 4];
+
+    expect(toCamelCase(arr)).toEqual([1, 2, 3, 4]);
+  });
 
   it('change object containing non-plain-object to camelCase', (): void => {
     class Class {

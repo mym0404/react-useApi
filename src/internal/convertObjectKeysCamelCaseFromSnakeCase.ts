@@ -6,9 +6,15 @@ export type JSONCandidate = any[] | object;
 function isArray<T>(objOrArray: JSONCandidate): objOrArray is any[] {
   return Array.isArray(objOrArray);
 }
+function isObject(objOrArray: JSONCandidate): objOrArray is object {
+  return typeof objOrArray === 'object' && objOrArray !== null;
+}
 
 function convertObjectKeysCamelCaseFromSnakeCase(objOrArr: JSONCandidate): JSONCandidate {
   if (!objOrArr) return {};
+
+  if (!isArray(objOrArr) && !isObject(objOrArr)) return objOrArr;
+
   if (isArray(objOrArr)) {
     return objOrArr.map(convertObjectKeysCamelCaseFromSnakeCase);
   } else {

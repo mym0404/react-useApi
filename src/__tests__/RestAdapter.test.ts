@@ -186,6 +186,15 @@ describe('Call - ', () => {
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
   });
 
+  it('[GIVEN] response with array [THEN] call success2', async () => {
+    setApiDefaultSettings({responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE]})
+    mockSimpleResponseOnce(null, ["2001","2002","2003"]);
+    const [dataPromise] = RestClient.GET<string[]>('');
+    const data = await dataPromise();
+    expect(data).toEqual(["2001","2002","2003"]);
+    clearApiDefaultSettings()
+  });
+
   it('[GIVEN] baseUrl set [THEN] call success', async () => {
     setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/', logging: true });
     mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
