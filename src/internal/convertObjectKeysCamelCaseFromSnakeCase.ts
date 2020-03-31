@@ -10,7 +10,11 @@ function isObject(objOrArray: JSONCandidate): objOrArray is object {
   return typeof objOrArray === 'object' && objOrArray !== null;
 }
 
-function convertObjectKeysCamelCaseFromSnakeCase(objOrArr: JSONCandidate): JSONCandidate {
+function convertObjectKeysCamelCaseFromSnakeCase(objOrArr: any): JSONCandidate {
+  if (objOrArr === 0 || objOrArr === null) {
+    return objOrArr;
+  }
+
   if (!objOrArr) return {};
 
   if (!isArray(objOrArr) && !isObject(objOrArr)) return objOrArr;

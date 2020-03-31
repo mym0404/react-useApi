@@ -47,9 +47,10 @@ describe('camelCase function test', (): void => {
       { aBC: { cCC: 1, bBB: [{ dDD: 1 }, 2, 3] } },
     ]);
   });
+
   it('change array to camelCase2', (): void => {
-    const numberArray = [1, 2, 3, 4];
-    expect(toCamelCase(numberArray)).toEqual([1, 2, 3, 4]);
+    const numberArray = [0, 1, 2, 3, 4];
+    expect(toCamelCase(numberArray)).toEqual([0, 1, 2, 3, 4]);
 
     const stringArray = ['2001', '2002', '2003'];
     expect(toCamelCase(stringArray)).toEqual(['2001', '2002', '2003']);

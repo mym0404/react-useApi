@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/mym0404/useRest",
   "scripts": {
+    "prepublish": "yarn run check",
     "check": "yarn lint && yarn tsc && yarn jest --coverage -u",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "test": "jest"
