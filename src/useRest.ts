@@ -102,6 +102,11 @@ const useRest = <ResponseData>(
 
   const previousDependencies = useRef<any[]>();
 
+  const onSuccessRef = useRef<any>();
+  const onFailRef = useRef<any>();
+  onSuccessRef.current = onSuccess;
+  onFailRef.current = onFail;
+
   useEffect(() => {
     if (isDirtyDependencies(dependencies, previousDependencies.current)) {
       previousDependencies.current = dependencies;
@@ -122,13 +127,13 @@ const useRest = <ResponseData>(
                   const data = await call();
                   if (!unmounted.current) {
                     dispatch(callSuccess(data));
-                    onSuccess(data);
+                    onSuccessRef.current(data);
                   }
                   fetching.current = false;
                 } catch (e) {
                   if (!unmounted.current) {
                     dispatch(callFail(e));
-                    onFail(e);
+                    onFailRef.current(e);
                   }
                   fetching.current = false;
                 }
@@ -141,12 +146,12 @@ const useRest = <ResponseData>(
             const data = await call();
             if (!unmounted.current) {
               dispatch(callSuccess(data));
-              onSuccess(data);
+              onSuccessRef.current(data);
             }
           } catch (e) {
             if (!unmounted.current) {
               dispatch(callFail(e));
-              onFail(e);
+              onFailRef.current(e);
             }
           }
         }

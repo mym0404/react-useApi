@@ -42,6 +42,7 @@ export function constructUriWithQueryParams(
     }
   } catch (e) {
     if (loggingError) {
+      // eslint-disable-next-line no-console
       console.warn(e);
     }
     return uri;

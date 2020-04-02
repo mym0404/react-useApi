@@ -65,6 +65,7 @@ export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames
 };
 export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   responseData: ResponseData,
+  statusCode: number,
 ) => ResponseData | Promise<ResponseData>;
 export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
@@ -202,6 +203,7 @@ function request<ResponseData = {}>(
               let responsePromise: Promise<Response>;
 
               if (defaultSettings.logging) {
+                // eslint-disable-next-line no-console
                 console.log(`🌈[${method}] - [${constructedUri}] - ${JSON.stringify(body, null, 2)}`);
               }
 
@@ -240,10 +242,11 @@ function request<ResponseData = {}>(
                 // TODO currently, only return response as json
                 let json = await response.json();
                 if (defaultSettings.logging) {
+                  // eslint-disable-next-line no-console
                   console.log(`🌈Api Response Body - ${JSON.stringify(json, null, 2)}`);
                 }
 
-                const responseDataOrPromise = defaultSettings.responseInterceptor(json);
+                const responseDataOrPromise = defaultSettings.responseInterceptor(json, statusCode);
                 if (isPromise(responseDataOrPromise)) {
                   json = await responseDataOrPromise;
                 } else {
@@ -254,7 +257,7 @@ function request<ResponseData = {}>(
 
                 // AddOns
                 defaultSettings.responseInterceptorAddons.forEach((addOn) => {
-                  responseData = addOn(responseData) as ResponseData;
+                  responseData = addOn(responseData, statusCode) as ResponseData;
                 });
               } catch (e) {
                 // Ignore empty body parsing or not json body
@@ -262,8 +265,8 @@ function request<ResponseData = {}>(
                 resolve(responseData);
               }
             } catch (e) {
-              // TODO remove console
               if (defaultSettings.logging) {
+                // eslint-disable-next-line no-console
                 console.warn(e);
               }
               reject(e);
