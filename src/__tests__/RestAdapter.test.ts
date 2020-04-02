@@ -29,6 +29,32 @@ describe('Call - ', () => {
     mockSimpleResponseOnce();
   });
 
+  it('as', async () => {
+    setApiDefaultSettings({});
+    fetchMock.resetMocks();
+    fetchMock.once(async () => {
+      return {
+        status: 405,
+        body: JSON.stringify({
+          code: 444,
+          message: 'satan',
+        }),
+      };
+    });
+    const [dataPromise] = RestClient.GET('');
+
+    expect.assertions(2);
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(e.code).toBe(444);
+      expect(e.message).toBe('satan');
+    }
+
+    clearApiDefaultSettings();
+  });
+
   it('[GIVEN] network response status code = 400 & defaultSettings [THEN] call fail', () => {
     fetchMock.resetMocks();
     fetchMock.once(async () => {
