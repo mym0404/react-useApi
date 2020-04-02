@@ -1,8 +1,7 @@
-import { clearApiDefaultSettings, setApiDefaultSettings } from '../index';
+import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from '..';
 
 import { FetchMock } from 'jest-fetch-mock';
 import { JSONCandidate } from '../internal/convertObjectKeysCamelCaseFromSnakeCase';
-import { ResponseInterceptorAddOn } from '../index';
 import RestClient from '../RestAdapter';
 
 jest.useRealTimers();
@@ -29,8 +28,34 @@ describe('Call - ', () => {
     mockSimpleResponseOnce();
   });
 
-  it('as', async () => {
-    setApiDefaultSettings({});
+  it('[GIVEN] errorInterceptor is set [WHEN] call ftp protocol [THEN] fail with unknown status code', async () => {
+    setApiDefaultSettings({
+      errorInterceptor: (e, statusCode) => ({ error: e, statusCode: statusCode }),
+    });
+    fetchMock.resetMocks();
+    fetchMock.disableMocks();
+
+    const [dataPromise] = RestClient.GET('ftp://network/error/');
+
+    try {
+      await dataPromise();
+    } catch ({ error, statusCode }) {
+      expect(error.name).toBe('TypeError');
+      expect(error.message).toBe('Only HTTP(S) protocols are supported');
+      expect(statusCode).toBe(undefined);
+    }
+
+    fetchMock.enableMocks();
+    clearApiDefaultSettings();
+  });
+
+  it('[GIVEN] custom errorInterceptor is set [WHEN] call [THEN] custom exception data is caught', async () => {
+    setApiDefaultSettings({
+      logging: true,
+      errorInterceptor: function() {
+        return { code: 444, message: 'satan' };
+      },
+    });
     fetchMock.resetMocks();
     fetchMock.once(async () => {
       return {
@@ -115,7 +140,7 @@ describe('Call - ', () => {
 
     expect.assertions(2);
     try {
-      const data = await dataPromise();
+      await dataPromise();
     } catch (e) {
       expect(e.name).toBe('Error');
       expect(e.message).toBe('Status Code [200] exists in responseCodeBlackList [200,100]');

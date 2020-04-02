@@ -71,6 +71,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
   baseUrl: string;
   timeout: number;
+  errorInterceptor: (error: Error, statusCode?: number) => any;
   requestInterceptor: RequestOptionsInterceptor;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
   responseInterceptorAddons: ResponseDataInterceptor<ResponseData>[];
@@ -86,12 +87,14 @@ const initialSettings: Settings<{}> = {
   },
   baseUrl: '',
   timeout: 5000,
+  errorInterceptor: (error) => error,
   requestInterceptor: (request) => request,
   responseInterceptor: (response) => response,
   responseInterceptorAddons: [],
   responseCodeWhiteListRange: { minInclude: 200, maxExclude: 300 },
   responseCodeWhiteList: [],
   responseCodeBlackList: [],
+
   logging: false,
 };
 let defaultSettings = initialSettings;
@@ -226,14 +229,22 @@ function request<ResponseData = {}>(
               const blackList = defaultSettings.responseCodeBlackList;
               if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
                 reject(
-                  new Error(
-                    // eslint-disable-next-line max-len
-                    `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
+                  defaultSettings.errorInterceptor(
+                    new Error(
+                      // eslint-disable-next-line max-len
+                      `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
+                    ),
+                    statusCode,
                   ),
                 );
                 return;
               } else if (blackList.includes(statusCode)) {
-                reject(new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`));
+                reject(
+                  defaultSettings.errorInterceptor(
+                    new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
+                    statusCode,
+                  ),
+                );
                 return;
               }
 
@@ -269,7 +280,7 @@ function request<ResponseData = {}>(
                 // eslint-disable-next-line no-console
                 console.warn(e);
               }
-              reject(e);
+              reject(defaultSettings.errorInterceptor(e));
             }
           },
         );
