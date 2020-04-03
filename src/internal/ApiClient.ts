@@ -53,20 +53,22 @@ function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
 }
 
 export type RequestOptionsInterceptor = (
-  request: RequestOptions,
-  url: string,
-  method: RestMethod,
+  request: RequestOptions & { url: string; method: RestMethod; timout: number; baseUrl: string },
 ) => RequestOptions | Promise<RequestOptions>;
+
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
+
 export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<{}> } = {
   CAMELCASE: (response) => {
     return convertObjectKeysCamelCaseFromSnakeCase(response);
   },
 };
+
 export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   responseData: ResponseData,
   statusCode: number,
 ) => ResponseData | Promise<ResponseData>;
+
 export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
   baseUrl: string;
@@ -80,6 +82,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   responseCodeBlackList: number[];
   logging: boolean;
 };
+
 const initialSettings: Settings<{}> = {
   headers: {
     'Content-Type': 'application/json',
@@ -176,11 +179,13 @@ function request<ResponseData = {}>(
       defaultSettings.timeout,
       new Promise<ResponseData>((resolve, reject): void => {
         // Intercept Request Options
-        let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor(
-          options,
-          url,
-          method,
-        );
+        let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor({
+          ...options,
+          baseUrl: defaultSettings.baseUrl,
+          url: url,
+          timout: defaultSettings.timeout,
+          method: method,
+        });
         if (!isPromise(optionsPromise)) {
           optionsPromise = Promise.resolve(optionsPromise);
         }
@@ -256,8 +261,13 @@ function request<ResponseData = {}>(
                   // eslint-disable-next-line no-console
                   console.log(`🌈Api Response Body - ${JSON.stringify(json, null, 2)}`);
                 }
-
-                const responseDataOrPromise = defaultSettings.responseInterceptor(json, statusCode);
+                let responseDataOrPromise: Promise<{}> | {};
+                try {
+                  responseDataOrPromise = defaultSettings.responseInterceptor(json, statusCode);
+                } catch (e) {
+                  reject(defaultSettings.errorInterceptor(e, statusCode));
+                  return;
+                }
                 if (isPromise(responseDataOrPromise)) {
                   json = await responseDataOrPromise;
                 } else {
