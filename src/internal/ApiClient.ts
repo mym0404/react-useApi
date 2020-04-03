@@ -53,7 +53,8 @@ function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
 }
 
 export type RequestOptionsInterceptor = (
-  request: RequestOptions & { url: string; method: RestMethod; timout: number; baseUrl: string },
+  request: RequestOptions,
+  meta: { url: string; method: RestMethod; timout: number; baseUrl: string },
 ) => RequestOptions | Promise<RequestOptions>;
 
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
@@ -179,8 +180,7 @@ function request<ResponseData = {}>(
       defaultSettings.timeout,
       new Promise<ResponseData>((resolve, reject): void => {
         // Intercept Request Options
-        let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor({
-          ...options,
+        let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor(options, {
           baseUrl: defaultSettings.baseUrl,
           url: url,
           timout: defaultSettings.timeout,
