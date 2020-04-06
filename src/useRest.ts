@@ -158,7 +158,7 @@ const useRest = <ResponseData>(
       };
       callApi().then();
     }
-  }, [api, cold, dependencies, state, onFail, onSuccess, unmounted]);
+  }, [api, cold, dependencies]);
 
   useEffect(() => {
     return (): void => {
