@@ -169,4 +169,13 @@ const useRest = <ResponseData>(
   return { ...state };
 };
 
+const useCall = <ResponseData>(
+  api: ApiResult<ResponseData>,
+  dependencies: any[] = [],
+  onSuccess: (data: ResponseData) => void = (): void => {},
+  onFail: (e: any) => void = (): void => {},
+): State<ResponseData> => {
+  return useRest(api, dependencies, true, onSuccess, onFail);
+};
+export { useRest, useCall };
 export default useRest;
