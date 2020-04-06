@@ -28,6 +28,36 @@ describe('Call - ', () => {
     mockSimpleResponseOnce();
   });
 
+  it('throw in async responseInterceptor should invoke errorInterceptor and caught in catch block', async () => {
+    expect.assertions(6);
+
+    mockSimpleResponseOnce(null, { code: 42, message: 'hi' });
+
+    setApiDefaultSettings({
+      responseInterceptor: async (response: any) => {
+        expect(response.code).toBe(42);
+        expect(response.message).toBe('hi');
+        throw response;
+      },
+      errorInterceptor: ({ code, message }) => {
+        expect(code).toBe(42);
+        expect(message).toBe('hi');
+
+        return { code, message };
+      },
+    });
+
+    const [dataPromise] = RestClient.GET('');
+    try {
+      await dataPromise();
+    } catch ({ code, message }) {
+      expect(code).toBe(42);
+      expect(message).toBe('hi');
+    }
+
+    clearApiDefaultSettings();
+  });
+
   it('[GIVEN] errorInterceptor is set [WHEN] call ftp protocol [THEN] fail with unknown status code', async () => {
     setApiDefaultSettings({
       errorInterceptor: (e, statusCode) => ({ error: e, statusCode: statusCode }),

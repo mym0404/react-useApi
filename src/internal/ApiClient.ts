@@ -74,7 +74,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
   baseUrl: string;
   timeout: number;
-  errorInterceptor: (error: Error, statusCode?: number) => any;
+  errorInterceptor: (error: any, statusCode?: number) => any;
   requestInterceptor: RequestOptionsInterceptor;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
   responseInterceptorAddons: ResponseDataInterceptor<ResponseData>[];
@@ -180,6 +180,9 @@ function request<ResponseData = {}>(
       defaultSettings.timeout,
       new Promise<ResponseData>((resolve, reject): void => {
         // Intercept Request Options
+
+        options.headers = options.headers || defaultSettings.headers;
+
         let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor(options, {
           baseUrl: defaultSettings.baseUrl,
           url: url,
@@ -203,7 +206,7 @@ function request<ResponseData = {}>(
               );
 
               const requestInitWithoutBody: RequestInit = {
-                headers: headers || defaultSettings.headers,
+                headers: headers,
                 method: method,
                 signal: abortSignal,
               };
@@ -261,17 +264,21 @@ function request<ResponseData = {}>(
                   // eslint-disable-next-line no-console
                   console.log(`🌈Api Response Body - ${JSON.stringify(json, null, 2)}`);
                 }
+
                 let responseDataOrPromise: Promise<{}> | {};
+
                 try {
                   responseDataOrPromise = defaultSettings.responseInterceptor(json, statusCode);
+
+                  if (isPromise(responseDataOrPromise)) {
+                    json = await responseDataOrPromise;
+                  } else {
+                    json = responseDataOrPromise;
+                  }
                 } catch (e) {
-                  reject(defaultSettings.errorInterceptor(e, statusCode));
-                  return;
-                }
-                if (isPromise(responseDataOrPromise)) {
-                  json = await responseDataOrPromise;
-                } else {
-                  json = responseDataOrPromise;
+                  const interceptedError = defaultSettings.errorInterceptor(e, statusCode);
+                  reject(interceptedError);
+                  throw interceptedError;
                 }
 
                 responseData = json as ResponseData;

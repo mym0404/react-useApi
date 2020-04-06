@@ -90,7 +90,7 @@ const useRest = <ResponseData>(
   dependencies: any[] = [],
   cold = false,
   onSuccess: (data: ResponseData) => void = (): void => {},
-  onFail: (e: Error) => void = (): void => {},
+  onFail: (e: any) => void = (): void => {},
 ): State<ResponseData> => {
   const unmounted = useRef(false);
   const fetching = useRef(false);
