@@ -1,12 +1,12 @@
 {
   "name": "use-rest",
-  "version": "1.0.0-beta14",
+  "version": "1.0.0-beta15",
   "description": "Custom React hook for REST network call",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/mym0404/useRest",
   "scripts": {
-    "prepublish": "yarn run check",
+    "prepare": "yarn run check",
     "check": "yarn lint && yarn tsc && yarn jest --coverage -u",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "test": "jest"

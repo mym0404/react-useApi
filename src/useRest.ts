@@ -114,33 +114,33 @@ const useRest = <ResponseData>(
       const callApi = async (): Promise<void> => {
         const [call] = api;
 
-        if (cold) {
-          dispatch(
-            setCall(
-              async (): Promise<void> => {
-                try {
-                  if (fetching.current) {
-                    return;
-                  }
-                  fetching.current = true;
-                  dispatch(callStart());
-                  const data = await call();
-                  if (!unmounted.current) {
-                    dispatch(callSuccess(data));
-                    onSuccessRef.current(data);
-                  }
-                  fetching.current = false;
-                } catch (e) {
-                  if (!unmounted.current) {
-                    dispatch(callFail(e));
-                    onFailRef.current(e);
-                  }
-                  fetching.current = false;
+        dispatch(
+          setCall(
+            async (): Promise<void> => {
+              try {
+                if (fetching.current) {
+                  return;
                 }
-              },
-            ),
-          );
-        } else {
+                fetching.current = true;
+                dispatch(callStart());
+                const data = await call();
+                if (!unmounted.current) {
+                  dispatch(callSuccess(data));
+                  onSuccessRef.current(data);
+                }
+                fetching.current = false;
+              } catch (e) {
+                if (!unmounted.current) {
+                  dispatch(callFail(e));
+                  onFailRef.current(e);
+                }
+                fetching.current = false;
+              }
+            },
+          ),
+        );
+
+        if (!cold) {
           try {
             dispatch(callStart());
             const data = await call();
