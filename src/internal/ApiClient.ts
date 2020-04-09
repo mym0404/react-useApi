@@ -108,6 +108,9 @@ export function setApiDefaultSettings(options: Partial<typeof defaultSettings>):
 export function clearApiDefaultSettings(): void {
   defaultSettings = initialSettings;
 }
+export function getApiDefaultSettings(): Partial<typeof defaultSettings> {
+  return defaultSettings;
+}
 
 /**
  * The method for uploading files to api server.
