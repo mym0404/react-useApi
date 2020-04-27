@@ -9,7 +9,7 @@ const restClient: RestAdapter = {
   POST: <ResponseData>(path: string, options?: RequestOptions) => request<ResponseData>('POST', path, options),
   PUT: <ResponseData>(path: string, options?: RequestOptions) => request<ResponseData>('PUT', path, options),
   DELETE: <ResponseData>(path: string, options?: RequestOptions) => request<ResponseData>('DELETE', path, options),
-  PATCH: <ResponseData>(path: string, options?: RequestOptions) => request<ResponseData>('DELETE', path, options),
+  PATCH: <ResponseData>(path: string, options?: RequestOptions) => request<ResponseData>('PATCH', path, options),
 };
 
 export const { GET, POST, PUT, DELETE, PATCH } = restClient;
