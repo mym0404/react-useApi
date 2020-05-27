@@ -1,8 +1,8 @@
-import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from '..';
+import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from './index';
 
 import { FetchMock } from 'jest-fetch-mock';
-import { JSONCandidate } from '../internal/convertObjectKeysCamelCaseFromSnakeCase';
-import RestClient from '../RestAdapter';
+import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
+import RestClient from './RestAdapter';
 
 jest.useRealTimers();
 
@@ -26,6 +26,42 @@ describe('Call - ', () => {
   beforeEach(() => {
     fetchMock.resetMocks();
     mockSimpleResponseOnce();
+  });
+
+  it('key serilization is working well', async () => {
+    mockSimpleResponseOnce(null, {
+      userName: 'mj',
+      userAge: 24,
+    });
+
+    const [dataPromise] = RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({
+      name: 'mj',
+      age: 24,
+    });
+  });
+
+  it('key serilization and camelCase addOn are working well together', async () => {
+    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
+
+    mockSimpleResponseOnce(null, {
+      user_name: 'mj',
+      user_age: 24,
+    });
+
+    const [dataPromise] = RestClient.GET('', { serializedNames: { user_name: 'name_name', user_age: 'age_age' } });
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({
+      nameName: 'mj',
+      ageAge: 24,
+    });
+
+    clearApiDefaultSettings();
   });
 
   it('throw in async responseInterceptor should invoke errorInterceptor and caught in catch block', async () => {

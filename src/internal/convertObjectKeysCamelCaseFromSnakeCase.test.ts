@@ -1,4 +1,4 @@
-import toCamelCase from '../convertObjectKeysCamelCaseFromSnakeCase';
+import toCamelCase from './convertObjectKeysCamelCaseFromSnakeCase';
 
 describe('camelCase function test', (): void => {
   it('general object to camelCase', (): void => {

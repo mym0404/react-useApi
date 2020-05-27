@@ -18,5 +18,7 @@ module.exports = {
     '@typescript-eslint/no-empty-function': 0,
     'no-extra-parens': 0,
     '@typescript-eslint/no-explicit-any': 0,
+    'no-useless-escape': 0,
+    '@typescript-eslint/camelcase': 0,
   },
 };

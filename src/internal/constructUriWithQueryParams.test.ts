@@ -1,4 +1,4 @@
-import { constructUriWithQueryParams } from '../constructUriWithQueryParams';
+import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 
 describe('constructUriWithQueryParams', () => {
   it('without params should be same', () => {

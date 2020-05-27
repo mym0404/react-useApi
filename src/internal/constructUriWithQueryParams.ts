@@ -21,7 +21,9 @@ export function constructUriWithQueryParams(
     }
     queryParams &&
       Object.entries(queryParams).forEach(([key, value]) => {
-        parameters.set(key, value);
+        if (value !== undefined) {
+          parameters.set(key, value);
+        }
       });
 
     let urlWithoutQueryParams: string;

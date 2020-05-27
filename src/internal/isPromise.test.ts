@@ -1,4 +1,4 @@
-import isPromise from '../isPromise';
+import isPromise from './isPromise';
 
 it('promise is determined Promise', () => {
   expect(isPromise(new Promise((r) => r()))).toBe(true);

@@ -1,4 +1,4 @@
-import isPlainObject from "../isPlainObject";
+import isPlainObject from "./isPlainObject";
 import getPrototypeOf = Reflect.getPrototypeOf;
 
 describe('test isPlainObject', () => {

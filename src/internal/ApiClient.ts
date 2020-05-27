@@ -3,6 +3,7 @@ import 'abortcontroller-polyfill';
 import convertObjectKeysCamelCaseFromSnakeCase, { JSONCandidate } from './convertObjectKeysCamelCaseFromSnakeCase';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
+import convertJsonKeys from './convertJsonKeys';
 import isPromise from './isPromise';
 
 declare const global;
@@ -34,6 +35,7 @@ export type RequestOptions = {
   body?: object | URLSearchParams;
   files?: ReactNativeFile[];
   headers?: Header;
+  serializedNames?: { [P in string]: string };
 };
 
 export type Call = () => void;
@@ -101,15 +103,15 @@ const initialSettings: Settings<{}> = {
 
   logging: false,
 };
-let defaultSettings = initialSettings;
-export function setApiDefaultSettings(options: Partial<typeof defaultSettings>): void {
-  defaultSettings = { ...initialSettings, ...options };
+let settings = initialSettings;
+export function setApiDefaultSettings(options: Partial<typeof settings>): void {
+  settings = { ...initialSettings, ...options };
 }
 export function clearApiDefaultSettings(): void {
-  defaultSettings = initialSettings;
+  settings = initialSettings;
 }
-export function getApiDefaultSettings(): Partial<typeof defaultSettings> {
-  return defaultSettings;
+export function getApiDefaultSettings(): Partial<typeof settings> {
+  return settings;
 }
 
 /**
@@ -173,23 +175,23 @@ function requestJson(uri: string, requestInit: RequestInit, body?: object): Prom
 function request<ResponseData = {}>(
   method: RestMethod,
   url: string,
-  options: RequestOptions = { headers: defaultSettings.headers },
+  options: RequestOptions = { headers: settings.headers },
 ): ApiResult<ResponseData> {
   const abortController = new AbortController();
   const abortSignal = abortController.signal;
 
   const callPromise: CallPromise<ResponseData> = () =>
     withTimeout(
-      defaultSettings.timeout,
+      settings.timeout,
       new Promise<ResponseData>((resolve, reject): void => {
         // Intercept Request Options
 
-        options.headers = options.headers || defaultSettings.headers;
+        options.headers = options.headers || settings.headers;
 
-        let optionsPromise: RequestOptions | Promise<RequestOptions> = defaultSettings.requestInterceptor(options, {
-          baseUrl: defaultSettings.baseUrl,
+        let optionsPromise: RequestOptions | Promise<RequestOptions> = settings.requestInterceptor(options, {
+          baseUrl: settings.baseUrl,
           url: url,
-          timout: defaultSettings.timeout,
+          timout: settings.timeout,
           method: method,
         });
         if (!isPromise(optionsPromise)) {
@@ -199,13 +201,21 @@ function request<ResponseData = {}>(
         optionsPromise.then(
           async (options): Promise<void> => {
             try {
-              const { queryParams, body, files, headers } = options;
+              const { queryParams, body, files, headers, serializedNames } = options;
+
+              if (typeof body === 'object') {
+                const undefinedKeys: string[] = [];
+                Object.entries(body).forEach(([key, value]) => {
+                  if (value === undefinedKeys) undefinedKeys.push(key);
+                });
+                undefinedKeys.forEach((key) => delete body[key]);
+              }
 
               const constructedUri = constructUriWithQueryParams(
                 url,
                 queryParams,
-                defaultSettings.baseUrl,
-                defaultSettings.logging,
+                settings.baseUrl,
+                settings.logging,
               );
 
               const requestInitWithoutBody: RequestInit = {
@@ -216,7 +226,7 @@ function request<ResponseData = {}>(
 
               let responsePromise: Promise<Response>;
 
-              if (defaultSettings.logging) {
+              if (settings.logging) {
                 // eslint-disable-next-line no-console
                 console.log(`🌈[${method}] - [${constructedUri}] - ${JSON.stringify(body, null, 2)}`);
               }
@@ -235,12 +245,12 @@ function request<ResponseData = {}>(
               const response = await responsePromise;
 
               const { status: statusCode } = response;
-              const { minInclude: min, maxExclude: max } = defaultSettings.responseCodeWhiteListRange;
-              const whiteList = defaultSettings.responseCodeWhiteList;
-              const blackList = defaultSettings.responseCodeBlackList;
+              const { minInclude: min, maxExclude: max } = settings.responseCodeWhiteListRange;
+              const whiteList = settings.responseCodeWhiteList;
+              const blackList = settings.responseCodeBlackList;
               if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
                 reject(
-                  defaultSettings.errorInterceptor(
+                  settings.errorInterceptor(
                     new Error(
                       // eslint-disable-next-line max-len
                       `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
@@ -251,7 +261,7 @@ function request<ResponseData = {}>(
                 return;
               } else if (blackList.includes(statusCode)) {
                 reject(
-                  defaultSettings.errorInterceptor(
+                  settings.errorInterceptor(
                     new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
                     statusCode,
                   ),
@@ -263,15 +273,19 @@ function request<ResponseData = {}>(
               try {
                 // TODO currently, only return response as json
                 let json = await response.json();
-                if (defaultSettings.logging) {
+                if (settings.logging) {
                   // eslint-disable-next-line no-console
                   console.log(`🌈Api Response Body - ${JSON.stringify(json, null, 2)}`);
+                }
+
+                if (serializedNames) {
+                  json = convertJsonKeys(json, serializedNames);
                 }
 
                 let responseDataOrPromise: Promise<{}> | {};
 
                 try {
-                  responseDataOrPromise = defaultSettings.responseInterceptor(json, statusCode);
+                  responseDataOrPromise = settings.responseInterceptor(json, statusCode);
 
                   if (isPromise(responseDataOrPromise)) {
                     json = await responseDataOrPromise;
@@ -279,7 +293,7 @@ function request<ResponseData = {}>(
                     json = responseDataOrPromise;
                   }
                 } catch (e) {
-                  const interceptedError = defaultSettings.errorInterceptor(e, statusCode);
+                  const interceptedError = settings.errorInterceptor(e, statusCode);
                   reject(interceptedError);
                   throw interceptedError;
                 }
@@ -287,20 +301,25 @@ function request<ResponseData = {}>(
                 responseData = json as ResponseData;
 
                 // AddOns
-                defaultSettings.responseInterceptorAddons.forEach((addOn) => {
+                settings.responseInterceptorAddons.forEach((addOn) => {
                   responseData = addOn(responseData, statusCode) as ResponseData;
                 });
               } catch (e) {
                 // Ignore empty body parsing or not json body
+
+                if (settings.logging) {
+                  // eslint-disable-next-line no-console
+                  console.warn(e);
+                }
               } finally {
                 resolve(responseData);
               }
             } catch (e) {
-              if (defaultSettings.logging) {
+              if (settings.logging) {
                 // eslint-disable-next-line no-console
                 console.warn(e);
               }
-              reject(defaultSettings.errorInterceptor(e));
+              reject(settings.errorInterceptor(e));
             }
           },
         );

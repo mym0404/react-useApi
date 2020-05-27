@@ -1,7 +1,7 @@
-import { ApiResult, useRest } from '..';
+import { ApiResult, useRest } from './index';
 import { act, renderHook } from '@testing-library/react-hooks';
 
-import { useCall } from '../useRest';
+import { useCall } from './useRest';
 
 type ResponseType = {
   name: string;
