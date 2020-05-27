@@ -4,6 +4,7 @@ import convertObjectKeysCamelCaseFromSnakeCase, { JSONCandidate } from './conver
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 import convertJsonKeys from './convertJsonKeys';
+import isPlainObject from './isPlainObject';
 import isPromise from './isPromise';
 
 declare const global;
@@ -202,15 +203,7 @@ function request<ResponseData = {}>(
         optionsPromise.then(
           async (options): Promise<void> => {
             try {
-              const { queryParams, body, files, headers, serializedNames, interceptor } = options;
-
-              if (typeof body === 'object') {
-                const undefinedKeys: string[] = [];
-                Object.entries(body).forEach(([key, value]) => {
-                  if (value === undefinedKeys) undefinedKeys.push(key);
-                });
-                undefinedKeys.forEach((key) => delete body[key]);
-              }
+              const { queryParams, body: _body, files, headers, serializedNames, interceptor } = options;
 
               const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl, settings.logging);
 
@@ -221,6 +214,12 @@ function request<ResponseData = {}>(
               };
 
               let responsePromise: Promise<Response>;
+
+              let body = _body;
+
+              if ((isPlainObject(body) || Array.isArray(body)) && serializedNames) {
+                body = convertJsonKeys(body, serializedNames);
+              }
 
               if (settings.logging) {
                 // eslint-disable-next-line no-console
