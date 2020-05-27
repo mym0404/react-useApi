@@ -1,6 +1,6 @@
 {
   "name": "use-rest",
-  "version": "1.0.0-beta23",
+  "version": "1.0.0-beta24",
   "description": "Custom React hook for REST network call",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

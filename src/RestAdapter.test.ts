@@ -44,6 +44,85 @@ describe('Call - ', () => {
     });
   });
 
+  it("Network error doesn't affect interceptor process", async () => {
+    fetchMock.mockReset();
+    fetchMock.mockReject(new Error('my error'));
+
+    const [dataPromise] = RestClient.GET('', {
+      interceptor: (data: any) => {
+        return {
+          user_name: data.first_name + data.last_name,
+        };
+      },
+    });
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(e.message).toBe('my error');
+    }
+  });
+
+  it("JSON parsing error doesn't affect interceptor process", async () => {
+    expect.assertions(0); // ensure that interceptor won't run
+
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: 'not json!',
+    }));
+
+    const [dataPromise] = RestClient.GET('', {
+      interceptor: (data: any) => {
+        expect(data).toBeTruthy();
+        return {
+          user_name: data.first_name + data.last_name,
+        };
+      },
+    });
+
+    await dataPromise();
+  });
+
+  it('REST adapter response interceptor + key serialization + camelCase addOn are working well together', async () => {
+    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
+
+    mockSimpleResponseOnce(null, {
+      user_first_name: 'm',
+      user_last_name: 'j',
+    });
+
+    const [dataPromise] = RestClient.GET('', {
+      serializedNames: { user_first_name: 'first_name', user_last_name: 'last_name' },
+      interceptor: (data: any) => ({
+        user_name: data.first_name + data.last_name,
+      }),
+    });
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({
+      userName: 'mj',
+    });
+
+    clearApiDefaultSettings();
+  });
+
+  it('REST adapter response interceptor working well', async () => {
+    mockSimpleResponseOnce(null, {
+      user_first_name: 'm',
+      user_last_name: 'j',
+    });
+
+    const [dataPromise] = RestClient.GET('', {
+      interceptor: ({ user_first_name, user_last_name }: any) => ({ user_name: user_first_name + user_last_name }),
+    });
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({ user_name: 'mj' });
+  });
+
   it('key serilization and camelCase addOn are working well together', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
 

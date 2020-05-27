@@ -30,12 +30,13 @@ export type ContentType =
   | 'application/x-www-form-urlencoded;charset=UTF-8'
   | 'multipart/form-data';
 
-export type RequestOptions = {
+export type RequestOptions<ResponseData> = {
   queryParams?: object;
   body?: object | URLSearchParams;
   files?: ReactNativeFile[];
   headers?: Header;
   serializedNames?: { [P in string]: string };
+  interceptor?: (json: JSONCandidate) => ResponseData;
 };
 
 export type Call = () => void;
@@ -54,10 +55,10 @@ function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
   ]) as Promise<T>;
 }
 
-export type RequestOptionsInterceptor = (
-  request: RequestOptions,
+export type RequestOptionsInterceptor<ResponseData> = (
+  request: RequestOptions<ResponseData>,
   meta: { url: string; method: RestMethod; timout: number; baseUrl: string },
-) => RequestOptions | Promise<RequestOptions>;
+) => RequestOptions<ResponseData> | Promise<RequestOptions<ResponseData>>;
 
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
 
@@ -77,7 +78,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   baseUrl: string;
   timeout: number;
   errorInterceptor: (error: any, statusCode?: number) => any;
-  requestInterceptor: RequestOptionsInterceptor;
+  requestInterceptor: RequestOptionsInterceptor<ResponseData>;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
   responseInterceptorAddons: ResponseDataInterceptor<ResponseData>[];
   responseCodeWhiteListRange: { minInclude: number; maxExclude: number };
@@ -175,7 +176,7 @@ function requestJson(uri: string, requestInit: RequestInit, body?: object): Prom
 function request<ResponseData = {}>(
   method: RestMethod,
   url: string,
-  options: RequestOptions = { headers: settings.headers },
+  options: RequestOptions<ResponseData> = { headers: settings.headers },
 ): ApiResult<ResponseData> {
   const abortController = new AbortController();
   const abortSignal = abortController.signal;
@@ -188,7 +189,7 @@ function request<ResponseData = {}>(
 
         options.headers = options.headers || settings.headers;
 
-        let optionsPromise: RequestOptions | Promise<RequestOptions> = settings.requestInterceptor(options, {
+        let optionsPromise = settings.requestInterceptor(options, {
           baseUrl: settings.baseUrl,
           url: url,
           timout: settings.timeout,
@@ -201,7 +202,7 @@ function request<ResponseData = {}>(
         optionsPromise.then(
           async (options): Promise<void> => {
             try {
-              const { queryParams, body, files, headers, serializedNames } = options;
+              const { queryParams, body, files, headers, serializedNames, interceptor } = options;
 
               if (typeof body === 'object') {
                 const undefinedKeys: string[] = [];
@@ -211,12 +212,7 @@ function request<ResponseData = {}>(
                 undefinedKeys.forEach((key) => delete body[key]);
               }
 
-              const constructedUri = constructUriWithQueryParams(
-                url,
-                queryParams,
-                settings.baseUrl,
-                settings.logging,
-              );
+              const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl, settings.logging);
 
               const requestInitWithoutBody: RequestInit = {
                 headers: headers,
@@ -280,6 +276,10 @@ function request<ResponseData = {}>(
 
                 if (serializedNames) {
                   json = convertJsonKeys(json, serializedNames);
+                }
+
+                if (interceptor) {
+                  json = interceptor(json);
                 }
 
                 let responseDataOrPromise: Promise<{}> | {};
