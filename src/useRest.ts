@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { ApiResult } from './internal/ApiClient';
 import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
@@ -101,39 +101,46 @@ const useRest = <ResponseData>(
   onSuccessRef.current = onSuccess;
   onFailRef.current = onFail;
 
-  const callApi = useCallback(async () => {
-    const [call] = api;
+  const createCallThunk = useCallback(
+    () => async () => {
+      const [call] = api;
 
-    try {
-      if (fetching.current) {
-        return;
+      try {
+        if (fetching.current) {
+          return;
+        }
+        fetching.current = true;
+        dispatch(callStart());
+        const data = await call();
+        if (!unmounted.current) {
+          dispatch(callSuccess(data));
+          onSuccessRef.current(data);
+        }
+        fetching.current = false;
+      } catch (e) {
+        if (!unmounted.current) {
+          dispatch(callFail(e));
+          onFailRef.current(e);
+        }
+        fetching.current = false;
       }
-      fetching.current = true;
-      dispatch(callStart());
-      const data = await call();
-      if (!unmounted.current) {
-        dispatch(callSuccess(data));
-        onSuccessRef.current(data);
-      }
-      fetching.current = false;
-    } catch (e) {
-      if (!unmounted.current) {
-        dispatch(callFail(e));
-        onFailRef.current(e);
-      }
-      fetching.current = false;
-    }
-  }, [api]);
+    },
+    [api],
+  );
 
+  const [callApi, setCallApi] = useState<() => Promise<void>>(() => createCallThunk());
   useEffect(() => {
     if (isDirtyDependencies(dependencies, previousDependencies.current)) {
       previousDependencies.current = dependencies;
 
+      const _callApi = createCallThunk();
+      setCallApi(() => _callApi);
+
       if (!cold) {
-        callApi().then();
+        _callApi().then();
       }
     }
-  }, [api, cold, dependencies, callApi]);
+  }, [cold, dependencies, createCallThunk]);
 
   useEffect(() => {
     return (): void => {
