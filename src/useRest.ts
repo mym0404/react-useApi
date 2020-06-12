@@ -1,6 +1,6 @@
-import { ApiResult, Call } from './internal/ApiClient';
-import { useEffect, useReducer, useRef } from 'react';
+import { useCallback, useEffect, useReducer, useRef } from 'react';
 
+import { ApiResult } from './internal/ApiClient';
 import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
 
 function isDirtyDependencies(dep1: any[] | undefined, dep2: any[] | undefined): boolean {
@@ -23,7 +23,6 @@ type State<ResponseData = JSONCandidate> = {
   success: boolean;
   loading: boolean;
   error: Error | null;
-  call: () => void;
 } & {
   [P in keyof ResponseData]?: ResponseData[P];
 };
@@ -62,10 +61,6 @@ const reducer = <ResponseData>(state: State<ResponseData>, { type, payload }: Ac
   return state;
 };
 
-const setCall: ActionCreator<Call> = (call: Call) => ({
-  type: 'SetCall',
-  payload: call,
-});
 const callStart: ActionCreator = () => ({
   type: 'CallStart',
 });
@@ -79,7 +74,6 @@ const callFail: ActionCreator<Error> = (error: Error) => ({
 });
 
 const initialState: State = {
-  call: (): void => {},
   error: null,
   loading: false,
   success: false,
@@ -91,13 +85,13 @@ const useRest = <ResponseData>(
   cold = false,
   onSuccess: (data: ResponseData) => void = (): void => {},
   onFail: (e: any) => void = (): void => {},
-): State<ResponseData> => {
+): State<ResponseData> & { call: () => void } => {
   const unmounted = useRef(false);
   const fetching = useRef(false);
 
   const [state, dispatch] = useReducer<(prevState: State<ResponseData>, action: Action) => State<ResponseData>>(
     reducer,
-  initialState,
+    initialState,
   );
 
   const previousDependencies = useRef<any[]>();
@@ -107,58 +101,39 @@ const useRest = <ResponseData>(
   onSuccessRef.current = onSuccess;
   onFailRef.current = onFail;
 
+  const callApi = useCallback(async () => {
+    const [call] = api;
+
+    try {
+      if (fetching.current) {
+        return;
+      }
+      fetching.current = true;
+      dispatch(callStart());
+      const data = await call();
+      if (!unmounted.current) {
+        dispatch(callSuccess(data));
+        onSuccessRef.current(data);
+      }
+      fetching.current = false;
+    } catch (e) {
+      if (!unmounted.current) {
+        dispatch(callFail(e));
+        onFailRef.current(e);
+      }
+      fetching.current = false;
+    }
+  }, [api]);
+
   useEffect(() => {
     if (isDirtyDependencies(dependencies, previousDependencies.current)) {
       previousDependencies.current = dependencies;
 
-      const callApi = async (): Promise<void> => {
-        const [call] = api;
-
-        dispatch(
-          setCall(
-            async (): Promise<void> => {
-              try {
-                if (fetching.current) {
-                  return;
-                }
-                fetching.current = true;
-                dispatch(callStart());
-                const data = await call();
-                if (!unmounted.current) {
-                  dispatch(callSuccess(data));
-                  onSuccessRef.current(data);
-                }
-                fetching.current = false;
-              } catch (e) {
-                if (!unmounted.current) {
-                  dispatch(callFail(e));
-                  onFailRef.current(e);
-                }
-                fetching.current = false;
-              }
-            },
-          ),
-        );
-
-        if (!cold) {
-          try {
-            dispatch(callStart());
-            const data = await call();
-            if (!unmounted.current) {
-              dispatch(callSuccess(data));
-              onSuccessRef.current(data);
-            }
-          } catch (e) {
-            if (!unmounted.current) {
-              dispatch(callFail(e));
-              onFailRef.current(e);
-            }
-          }
-        }
-      };
-      callApi().then();
+      if (!cold) {
+        callApi().then();
+      }
     }
-  }, [api, cold, dependencies]);
+  }, [api, cold, dependencies, callApi]);
 
   useEffect(() => {
     return (): void => {
@@ -166,7 +141,7 @@ const useRest = <ResponseData>(
     };
   }, []);
 
-  return { ...state };
+  return { ...state, call: callApi };
 };
 
 const useCall = <ResponseData>(
@@ -174,7 +149,7 @@ const useCall = <ResponseData>(
   dependencies: any[] = [],
   onSuccess: (data: ResponseData) => void = (): void => {},
   onFail: (e: any) => void = (): void => {},
-): State<ResponseData> => {
+): State<ResponseData> & { call: () => void } => {
   return useRest(api, dependencies, true, onSuccess, onFail);
 };
 export { useRest, useCall };

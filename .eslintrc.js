@@ -20,5 +20,6 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 0,
     'no-useless-escape': 0,
     '@typescript-eslint/camelcase': 0,
+    '@typescript-eslint/indent': 0,
   },
 };
