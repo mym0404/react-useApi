@@ -154,7 +154,7 @@ describe('Call - ', () => {
         expect(response.message).toBe('hi');
         throw response;
       },
-      errorInterceptor: ({ code, message }) => {
+      errorInterceptor: ({ error: { code, message } }) => {
         expect(code).toBe(42);
         expect(message).toBe('hi');
 
@@ -175,7 +175,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] errorInterceptor is set [WHEN] call ftp protocol [THEN] fail with unknown status code', async () => {
     setApiDefaultSettings({
-      errorInterceptor: (e, statusCode) => ({ error: e, statusCode: statusCode }),
+      errorInterceptor: ({ error: e, statusCode }) => ({ error: e, statusCode: statusCode }),
     });
     fetchMock.resetMocks();
     fetchMock.disableMocks();

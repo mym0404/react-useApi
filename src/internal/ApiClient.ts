@@ -71,13 +71,18 @@ export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames
 export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   responseData: ResponseData,
   statusCode: number,
+  url: string,
+  method: RestMethod,
 ) => ResponseData | Promise<ResponseData>;
+
+export type ErrorInterceptorParams = { error: any; statusCode?: number; url: string; body: any; queryParams: any };
+export type ErrorInterceptor = (params: ErrorInterceptorParams) => any;
 
 export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
   baseUrl: string;
   timeout: number;
-  errorInterceptor: (error: any, statusCode?: number) => any;
+  errorInterceptor: ErrorInterceptor;
   requestInterceptor: RequestOptionsInterceptor<ResponseData>;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
   responseInterceptorAddons: ResponseDataInterceptor<ResponseData>[];
@@ -94,7 +99,7 @@ const initialSettings: Settings<{}> = {
   },
   baseUrl: '',
   timeout: 5000,
-  errorInterceptor: (error) => error,
+  errorInterceptor: ({ error }) => error,
   requestInterceptor: (request) => request,
   responseInterceptor: (response) => response,
   responseInterceptorAddons: [],
@@ -238,21 +243,27 @@ function request<ResponseData = {}>(
               const blackList = settings.responseCodeBlackList;
               if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
                 reject(
-                  settings.errorInterceptor(
-                    new Error(
+                  settings.errorInterceptor({
+                    error: new Error(
                       // eslint-disable-next-line max-len
                       `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
                     ),
                     statusCode,
-                  ),
+                    body,
+                    queryParams: queryParams,
+                    url,
+                  }),
                 );
                 return;
               } else if (blackList.includes(statusCode)) {
                 reject(
-                  settings.errorInterceptor(
-                    new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
+                  settings.errorInterceptor({
+                    error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
                     statusCode,
-                  ),
+                    body,
+                    queryParams: queryParams,
+                    url,
+                  }),
                 );
                 return;
               }
@@ -277,7 +288,7 @@ function request<ResponseData = {}>(
                 let responseDataOrPromise: Promise<{}> | {};
 
                 try {
-                  responseDataOrPromise = settings.responseInterceptor(json, statusCode);
+                  responseDataOrPromise = settings.responseInterceptor(json, statusCode, url, method);
 
                   if (isPromise(responseDataOrPromise)) {
                     json = await responseDataOrPromise;
@@ -285,7 +296,13 @@ function request<ResponseData = {}>(
                     json = responseDataOrPromise;
                   }
                 } catch (e) {
-                  const interceptedError = settings.errorInterceptor(e, statusCode);
+                  const interceptedError = settings.errorInterceptor({
+                    error: e,
+                    statusCode,
+                    body,
+                    queryParams: queryParams,
+                    url,
+                  });
                   reject(interceptedError);
                   throw interceptedError;
                 }
@@ -294,7 +311,7 @@ function request<ResponseData = {}>(
 
                 // AddOns
                 settings.responseInterceptorAddons.forEach((addOn) => {
-                  responseData = addOn(responseData, statusCode) as ResponseData;
+                  responseData = addOn(responseData, statusCode, url, method) as ResponseData;
                 });
               } catch (e) {
                 // Ignore empty body parsing or not json body
@@ -311,7 +328,14 @@ function request<ResponseData = {}>(
                 // eslint-disable-next-line no-console
                 console.warn(e);
               }
-              reject(settings.errorInterceptor(e));
+              reject(
+                settings.errorInterceptor({
+                  error: e,
+                  body: 'Cannot get body. This error is caused out of response process boundary.',
+                  queryParams: 'Cannot get queryParams. This error is caused out of response process boundary.',
+                  url,
+                }),
+              );
             }
           },
         );
