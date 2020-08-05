@@ -84,6 +84,24 @@ describe('Call - ', () => {
     await dataPromise();
   });
 
+  it('JSON parsing error will be rejected', async () => {
+    expect.assertions(1);
+
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: 'not json!',
+    }));
+
+    const [dataPromise] = RestClient.GET('');
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(1).toBe(1);
+    }
+  });
+
   it('REST adapter response interceptor + key serialization + camelCase addOn are working well together', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
 
@@ -196,7 +214,6 @@ describe('Call - ', () => {
 
   it('[GIVEN] custom errorInterceptor is set [WHEN] call [THEN] custom exception data is caught', async () => {
     setApiDefaultSettings({
-      logging: true,
       errorInterceptor: function() {
         return { code: 444, message: 'satan' };
       },
@@ -307,27 +324,23 @@ describe('Call - ', () => {
     }
   });
 
-  it.each([true, false])(
-    'logging : %p - [GIVEN] Network Error [WHEN] request api [THEN] promise will be rejected',
-    (logging) => {
-      setApiDefaultSettings({ logging });
-      fetchMock.resetMocks();
-      fetchMock.mockRejectOnce(new Error('Network Fail!'));
+  it('[GIVEN] Network Error [WHEN] request api [THEN] promise will be rejected', () => {
+    fetchMock.resetMocks();
+    fetchMock.mockRejectOnce(new Error('Network Fail!'));
 
-      const [dataPromise] = RestClient.GET('');
+    const [dataPromise] = RestClient.GET('');
 
-      expect.assertions(2);
+    expect.assertions(2);
 
-      return dataPromise()
-        .then(() => {
-          clearApiDefaultSettings();
-        })
-        .catch((e) => {
-          expect(e.name).toBe('Error');
-          expect(e.message).toBe('Network Fail!');
-        });
-    },
-  );
+    return dataPromise()
+      .then(() => {
+        clearApiDefaultSettings();
+      })
+      .catch((e) => {
+        expect(e.name).toBe('Error');
+        expect(e.message).toBe('Network Fail!');
+      });
+  });
 
   it('[GIVEN] Timeout [WHEN] request api [THEN] promise will be rejected', async (done) => {
     fetchMock.resetMocks();
@@ -359,13 +372,6 @@ describe('Call - ', () => {
     clearApiDefaultSettings();
   });
 
-  it('[GIVEN] with logging [THEN] call success', async () => {
-    setApiDefaultSettings({ logging: true });
-    const [dataPromise] = RestClient.GET('');
-    await dataPromise();
-    clearApiDefaultSettings();
-  });
-
   it('[GIVEN] with CAMELCASE response interceptor addon [WHEN] response is snake_case [THEN] response data is camelCase', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, { my_name: 'mj' });
@@ -383,7 +389,7 @@ describe('Call - ', () => {
   });
 
   it('[GIVEN] response with array [THEN] call success2', async () => {
-    setApiDefaultSettings({ logging: true, responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
+    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, ['2001', '2002', '2003']);
     const [dataPromise] = RestClient.GET<string[]>('');
     const data = await dataPromise();
@@ -392,7 +398,7 @@ describe('Call - ', () => {
   });
 
   it('[GIVEN] baseUrl set [THEN] call success', async () => {
-    setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/', logging: true });
+    setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/' });
     mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
     const [dataPromise] = RestClient.GET<{ my_name: string }>('getMyName');
     const data = await dataPromise();

@@ -89,7 +89,6 @@ export type Settings<ResponseData extends JSONCandidate> = {
   responseCodeWhiteListRange: { minInclude: number; maxExclude: number };
   responseCodeWhiteList: number[];
   responseCodeBlackList: number[];
-  logging: boolean;
 };
 
 const initialSettings: Settings<{}> = {
@@ -106,8 +105,6 @@ const initialSettings: Settings<{}> = {
   responseCodeWhiteListRange: { minInclude: 200, maxExclude: 300 },
   responseCodeWhiteList: [],
   responseCodeBlackList: [],
-
-  logging: false,
 };
 let settings = initialSettings;
 export function setApiDefaultSettings(options: Partial<typeof settings>): void {
@@ -200,6 +197,7 @@ function request<ResponseData = {}>(
           timout: settings.timeout,
           method: method,
         });
+
         if (!isPromise(optionsPromise)) {
           optionsPromise = Promise.resolve(optionsPromise);
         }
@@ -209,7 +207,7 @@ function request<ResponseData = {}>(
             try {
               const { queryParams, body, files, headers, serializedNames, interceptor } = options;
 
-              const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl, settings.logging);
+              const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
 
               const requestInitWithoutBody: RequestInit = {
                 headers: headers,
@@ -218,11 +216,6 @@ function request<ResponseData = {}>(
               };
 
               let responsePromise: Promise<Response>;
-
-              if (settings.logging) {
-                // eslint-disable-next-line no-console
-                console.log(`🌈[${method}] - [${constructedUri}] - ${JSON.stringify(body, null, 2)}`);
-              }
 
               if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
                 responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
@@ -270,11 +263,12 @@ function request<ResponseData = {}>(
 
               let responseData: ResponseData = {} as ResponseData;
               try {
-                // TODO currently, only return response as json
-                let json = await response.json();
-                if (settings.logging) {
-                  // eslint-disable-next-line no-console
-                  console.log(`🌈Api Response Body - ${JSON.stringify(json, null, 2)}`);
+                let json: any;
+
+                try {
+                  json = await response.json();
+                } catch (e) {
+                  throw new Error('JSON PARSING');
                 }
 
                 if (serializedNames) {
@@ -314,20 +308,13 @@ function request<ResponseData = {}>(
                   responseData = addOn(responseData, statusCode, url, method) as ResponseData;
                 });
               } catch (e) {
-                // Ignore empty body parsing or not json body
-
-                if (settings.logging) {
-                  // eslint-disable-next-line no-console
-                  console.warn(e);
+                if (e?.message === 'JSON PARSING') {
+                  throw e;
                 }
               } finally {
                 resolve(responseData);
               }
             } catch (e) {
-              if (settings.logging) {
-                // eslint-disable-next-line no-console
-                console.warn(e);
-              }
               reject(
                 settings.errorInterceptor({
                   error: e,

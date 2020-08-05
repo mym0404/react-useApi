@@ -1,9 +1,4 @@
-export function constructUriWithQueryParams(
-  uri: string,
-  queryParams?: object,
-  baseUrl = '',
-  loggingError = false,
-): string {
+export function constructUriWithQueryParams(uri: string, queryParams?: object, baseUrl = ''): string {
   const parameters = new Map<string, string>();
 
   try {
@@ -43,10 +38,6 @@ export function constructUriWithQueryParams(
       return urlWithoutQueryParams + '?' + queryParamsString.slice(0, -1);
     }
   } catch (e) {
-    if (loggingError) {
-      // eslint-disable-next-line no-console
-      console.warn(e);
-    }
     return uri;
   }
 }
