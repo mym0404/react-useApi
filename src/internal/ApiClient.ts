@@ -4,7 +4,6 @@ import convertObjectKeysCamelCaseFromSnakeCase, { JSONCandidate } from './conver
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 import convertJsonKeys from './convertJsonKeys';
-import isPromise from './isPromise';
 
 declare const global;
 const AbortController = global.AbortController;
@@ -58,12 +57,12 @@ function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
 export type RequestOptionsInterceptor<ResponseData> = (
   request: RequestOptions<ResponseData>,
   meta: { url: string; method: RestMethod; timout: number; baseUrl: string },
-) => RequestOptions<ResponseData> | Promise<RequestOptions<ResponseData>>;
+) => Promise<RequestOptions<ResponseData>>;
 
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
 
 export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<{}> } = {
-  CAMELCASE: (response) => {
+  CAMELCASE: async (response) => {
     return convertObjectKeysCamelCaseFromSnakeCase(response);
   },
 };
@@ -73,7 +72,7 @@ export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   statusCode: number,
   url: string,
   method: RestMethod,
-) => ResponseData | Promise<ResponseData>;
+) => Promise<ResponseData>;
 
 export type ErrorInterceptorParams = { error: any; statusCode?: number; url: string; body: any; queryParams: any };
 export type ErrorInterceptor = (params: ErrorInterceptorParams) => any;
@@ -99,8 +98,8 @@ const initialSettings: Settings<{}> = {
   baseUrl: '',
   timeout: 5000,
   errorInterceptor: ({ error }) => error,
-  requestInterceptor: (request) => request,
-  responseInterceptor: (response) => response,
+  requestInterceptor: (request) => Promise.resolve(request),
+  responseInterceptor: (response) => Promise.resolve(response),
   responseInterceptorAddons: [],
   responseCodeWhiteListRange: { minInclude: 200, maxExclude: 300 },
   responseCodeWhiteList: [],
@@ -185,21 +184,16 @@ function request<ResponseData = {}>(
 
   options.headers = options.headers || settings.headers;
 
-  let optionsPromise = settings.requestInterceptor(options, {
-    baseUrl: settings.baseUrl,
-    url: url,
-    timout: settings.timeout,
-    method: method,
-  }) as Promise<RequestOptions<{}>>;
-
-  if (!isPromise(optionsPromise)) {
-    optionsPromise = Promise.resolve(optionsPromise);
-  }
-
-  const optionsPromiseWithTimeout = withTimeout(settings.timeout, optionsPromise);
+  const optionsPromiseThunk = () =>
+    settings.requestInterceptor(options, {
+      baseUrl: settings.baseUrl,
+      url: url,
+      timout: settings.timeout,
+      method: method,
+    });
 
   const callPromise: CallPromise<ResponseData> = () =>
-    optionsPromiseWithTimeout.then(async (options) => {
+    withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
       try {
         const { queryParams, body, files, headers, serializedNames, interceptor } = options;
 
@@ -255,10 +249,19 @@ function request<ResponseData = {}>(
         let responseData: any = {};
 
         try {
-          responseData = await response.json();
+          const contentType = response.headers.get('Content-Type');
+          const contentLength = +response.headers.get('Content-Length');
+
+          if (contentType !== 'application/json' && typeof contentLength === 'number' && contentLength > 0) {
+            throw new Error(`response content-type is not application/json, value: ${contentType}`);
+          }
+
+          if (typeof contentLength === 'number' && contentLength > 0) {
+            responseData = await response.json();
+          }
         } catch (e) {
           throw {
-            error: new Error('json parse with response body is failed'),
+            error: e,
             body,
             queryParams,
             url,
@@ -275,11 +278,7 @@ function request<ResponseData = {}>(
         }
 
         try {
-          const responseDataOrPromise = settings.responseInterceptor(responseData, statusCode, url, method);
-
-          if (isPromise(responseDataOrPromise)) {
-            responseData = await responseDataOrPromise;
-          }
+          responseData = await settings.responseInterceptor(responseData, statusCode, url, method);
         } catch (e) {
           throw {
             error: e,
@@ -291,9 +290,9 @@ function request<ResponseData = {}>(
         }
 
         // AddOns
-        settings.responseInterceptorAddons.forEach((addOn) => {
-          responseData = addOn(responseData, statusCode, url, method) as ResponseData;
-        });
+        for (const addOn of settings.responseInterceptorAddons) {
+          responseData = await addOn(responseData, statusCode, url, method);
+        }
 
         return responseData;
       } catch (e) {

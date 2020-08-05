@@ -13,11 +13,11 @@ function mockSimpleResponseOnce(uri?: string | RegExp, body?: JSONCandidate): vo
 
   if (uri) {
     fetchMock.mockIf(uri, async () => {
-      return { status: 200, body: simpleBody };
+      return { status: 200, body: simpleBody, headers: { 'Content-Type': 'application/json', 'Content-Length': '3' } };
     });
   } else {
     fetchMock.once(async () => {
-      return { status: 200, body: simpleBody };
+      return { status: 200, body: simpleBody, headers: { 'Content-Type': 'application/json', 'Content-Length': '3' } };
     });
   }
 }
@@ -70,6 +70,7 @@ describe('Call - ', () => {
     fetchMock.mockOnce(async () => ({
       status: 200,
       body: 'not json!',
+      headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
     }));
 
     const [dataPromise] = RestClient.GET('', {
@@ -85,8 +86,40 @@ describe('Call - ', () => {
     try {
       await dataPromise();
     } catch (e) {
-      expect(e.message).toBe('json parse with response body is failed');
+      expect(e.message).toBe('response content-type is not application/json, value: text/plain');
     }
+  });
+
+  it('not application/json content type and content-length > 0 response is rejected', async () => {
+    expect.assertions(1); // ensure that interceptor won't run
+
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: 'not json!',
+      headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
+    }));
+
+    const [dataPromise] = RestClient.GET('');
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(e.message).toBe('response content-type is not application/json, value: text/plain');
+    }
+  });
+
+  it('not application/json content type and content-length == 0 response is resolved with empty object', async () => {
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: 'not json!',
+      headers: { 'Content-Type': 'text/plain', 'Content-Length': '0' },
+    }));
+
+    const [dataPromise] = RestClient.GET('');
+
+    expect(await dataPromise()).toEqual({});
   });
 
   it('JSON parsing error will be rejected', async () => {
@@ -96,6 +129,44 @@ describe('Call - ', () => {
     fetchMock.mockOnce(async () => ({
       status: 200,
       body: 'not json!',
+      headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
+    }));
+
+    const [dataPromise] = RestClient.GET('');
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(1).toBe(1);
+    }
+  });
+
+  it('Empty response => not fail', async () => {
+    expect.assertions(0);
+
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: undefined,
+    }));
+
+    const [dataPromise] = RestClient.GET('');
+
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(1).toBe(1);
+    }
+  });
+
+  it('Not empty response => fail', async () => {
+    expect.assertions(1);
+
+    fetchMock.mockReset();
+    fetchMock.mockOnce(async () => ({
+      status: 200,
+      body: JSON.stringify({ name: '<html><body>NotFound 404</body></html>' }),
+      headers: { 'Content-Type': 'text/html', 'Content-Length': '3' },
     }));
 
     const [dataPromise] = RestClient.GET('');
@@ -271,7 +342,11 @@ describe('Call - ', () => {
 
     fetchMock.resetMocks();
     fetchMock.once(async () => {
-      return { status: 400, body: JSON.stringify({ name: 'mj' }) };
+      return {
+        status: 400,
+        body: JSON.stringify({ name: 'mj' }),
+        headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
+      };
     });
     const [dataPromise] = RestClient.GET<{ name: string }>('');
 
@@ -286,7 +361,11 @@ describe('Call - ', () => {
 
     fetchMock.resetMocks();
     fetchMock.once(async () => {
-      return { status: 400, body: JSON.stringify({ name: 'mj' }) };
+      return {
+        status: 400,
+        body: JSON.stringify({ name: 'mj' }),
+        headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
+      };
     });
     const [dataPromise] = RestClient.GET<{ name: string }>('');
 
@@ -351,7 +430,7 @@ describe('Call - ', () => {
     fetchMock.resetMocks();
     fetchMock.once(async () => {
       await new Promise((resolve) => setTimeout(resolve, 5400));
-      return { status: 200 };
+      return { status: 200, headers: { 'Content-Type': 'application/json', 'Content-Length': '3' } };
     });
 
     const [dataPromise] = RestClient.GET('');
