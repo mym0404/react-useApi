@@ -82,9 +82,12 @@ const initialState: State = {
 const useRest = <ResponseData>(
   api: ApiResult<ResponseData>,
   dependencies: any[] = [],
-  cold = false,
-  onSuccess: (data: ResponseData) => void = (): void => {},
-  onFail: (e: any) => void = (): void => {},
+  options: {
+    cold?: boolean;
+    onSuccess?: (data: ResponseData) => void;
+    onFail?: (e: any) => void;
+    onPending?: () => void;
+  } = { cold: false },
 ): State<ResponseData> & { call: () => void } => {
   const unmounted = useRef(false);
   const fetching = useRef(false);
@@ -98,8 +101,11 @@ const useRest = <ResponseData>(
 
   const onSuccessRef = useRef<any>();
   const onFailRef = useRef<any>();
-  onSuccessRef.current = onSuccess;
-  onFailRef.current = onFail;
+  const onPendingRef = useRef<any>();
+
+  onSuccessRef.current = options?.onSuccess;
+  onFailRef.current = options?.onFail;
+  onPendingRef.current = options?.onPending;
 
   const createCallThunk = useCallback(
     () => async () => {
@@ -109,18 +115,19 @@ const useRest = <ResponseData>(
         if (fetching.current) {
           return;
         }
+        onPendingRef.current?.();
         fetching.current = true;
         dispatch(callStart());
         const data = await call();
         if (!unmounted.current) {
           dispatch(callSuccess(data));
-          onSuccessRef.current(data);
+          onSuccessRef.current?.(data);
         }
         fetching.current = false;
       } catch (e) {
         if (!unmounted.current) {
           dispatch(callFail(e));
-          onFailRef.current(e);
+          onFailRef.current?.(e);
         }
         fetching.current = false;
       }
@@ -129,6 +136,8 @@ const useRest = <ResponseData>(
   );
 
   const [callApi, setCallApi] = useState<() => Promise<void>>(() => createCallThunk());
+
+  const cold = options?.cold || false;
   useEffect(() => {
     if (isDirtyDependencies(dependencies, previousDependencies.current)) {
       previousDependencies.current = dependencies;
@@ -154,10 +163,13 @@ const useRest = <ResponseData>(
 const useCall = <ResponseData>(
   api: ApiResult<ResponseData>,
   dependencies: any[] = [],
-  onSuccess: (data: ResponseData) => void = (): void => {},
-  onFail: (e: any) => void = (): void => {},
+  options: {
+    onSuccess?: (data: ResponseData) => void;
+    onFail?: (e: any) => void;
+    onPending?: () => void;
+  } = {},
 ): State<ResponseData> & { call: () => void } => {
-  return useRest(api, dependencies, true, onSuccess, onFail);
+  return useRest(api, dependencies, { ...options, cold: true });
 };
 export { useRest, useCall };
 export default useRest;
