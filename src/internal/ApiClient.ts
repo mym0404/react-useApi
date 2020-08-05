@@ -183,151 +183,139 @@ function request<ResponseData = {}>(
   const abortController = new AbortController();
   const abortSignal = abortController.signal;
 
+  options.headers = options.headers || settings.headers;
+
+  let optionsPromise = settings.requestInterceptor(options, {
+    baseUrl: settings.baseUrl,
+    url: url,
+    timout: settings.timeout,
+    method: method,
+  }) as Promise<RequestOptions<{}>>;
+
+  if (!isPromise(optionsPromise)) {
+    optionsPromise = Promise.resolve(optionsPromise);
+  }
+
+  const optionsPromiseWithTimeout = withTimeout(settings.timeout, optionsPromise);
+
   const callPromise: CallPromise<ResponseData> = () =>
-    withTimeout(
-      settings.timeout,
-      new Promise<ResponseData>((resolve, reject): void => {
-        // Intercept Request Options
+    optionsPromiseWithTimeout.then(async (options) => {
+      try {
+        const { queryParams, body, files, headers, serializedNames, interceptor } = options;
 
-        options.headers = options.headers || settings.headers;
+        const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
 
-        let optionsPromise = settings.requestInterceptor(options, {
-          baseUrl: settings.baseUrl,
-          url: url,
-          timout: settings.timeout,
+        const requestInitWithoutBody: RequestInit = {
+          headers: headers,
           method: method,
-        });
+          signal: abortSignal,
+        };
 
-        if (!isPromise(optionsPromise)) {
-          optionsPromise = Promise.resolve(optionsPromise);
+        let responsePromise: Promise<Response>;
+
+        if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
+          responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
+        } else if (
+          headers?.['Content-Type'] === 'application/x-www-form-urlencoded;charset=UTF-8' ||
+          body instanceof URLSearchParams
+        ) {
+          responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
+        } else {
+          responsePromise = requestJson(constructedUri, requestInitWithoutBody, body);
         }
 
-        optionsPromise.then(
-          async (options): Promise<void> => {
-            try {
-              const { queryParams, body, files, headers, serializedNames, interceptor } = options;
+        const response = await responsePromise;
 
-              const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
+        const { status: statusCode } = response;
+        const { minInclude: min, maxExclude: max } = settings.responseCodeWhiteListRange;
+        const whiteList = settings.responseCodeWhiteList;
+        const blackList = settings.responseCodeBlackList;
 
-              const requestInitWithoutBody: RequestInit = {
-                headers: headers,
-                method: method,
-                signal: abortSignal,
-              };
+        if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
+          throw {
+            error: new Error(
+              // eslint-disable-next-line max-len
+              `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
+            ),
+            body,
+            queryParams,
+            url,
+            statusCode,
+          };
+        } else if (blackList.includes(statusCode)) {
+          throw {
+            error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
+            body,
+            queryParams,
+            url,
+            statusCode,
+          };
+        }
 
-              let responsePromise: Promise<Response>;
+        let responseData: any = {};
 
-              if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
-                responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
-              } else if (
-                headers?.['Content-Type'] === 'application/x-www-form-urlencoded;charset=UTF-8' ||
-                body instanceof URLSearchParams
-              ) {
-                responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
-              } else {
-                responsePromise = requestJson(constructedUri, requestInitWithoutBody, body);
-              }
+        try {
+          responseData = await response.json();
+        } catch (e) {
+          throw {
+            error: new Error('json parse with response body is failed'),
+            body,
+            queryParams,
+            url,
+            statusCode,
+          };
+        }
 
-              const response = await responsePromise;
+        if (serializedNames) {
+          responseData = convertJsonKeys(responseData, serializedNames);
+        }
 
-              const { status: statusCode } = response;
-              const { minInclude: min, maxExclude: max } = settings.responseCodeWhiteListRange;
-              const whiteList = settings.responseCodeWhiteList;
-              const blackList = settings.responseCodeBlackList;
-              if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
-                reject(
-                  settings.errorInterceptor({
-                    error: new Error(
-                      // eslint-disable-next-line max-len
-                      `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
-                    ),
-                    statusCode,
-                    body,
-                    queryParams: queryParams,
-                    url,
-                  }),
-                );
-                return;
-              } else if (blackList.includes(statusCode)) {
-                reject(
-                  settings.errorInterceptor({
-                    error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
-                    statusCode,
-                    body,
-                    queryParams: queryParams,
-                    url,
-                  }),
-                );
-                return;
-              }
+        if (interceptor) {
+          responseData = interceptor(responseData as any);
+        }
 
-              let responseData: ResponseData = {} as ResponseData;
-              try {
-                let json: any;
+        try {
+          const responseDataOrPromise = settings.responseInterceptor(responseData, statusCode, url, method);
 
-                try {
-                  json = await response.json();
-                } catch (e) {
-                  throw new Error('JSON PARSING');
-                }
+          if (isPromise(responseDataOrPromise)) {
+            responseData = await responseDataOrPromise;
+          }
+        } catch (e) {
+          throw {
+            error: e,
+            body,
+            queryParams,
+            url,
+            statusCode,
+          };
+        }
 
-                if (serializedNames) {
-                  json = convertJsonKeys(json, serializedNames);
-                }
+        // AddOns
+        settings.responseInterceptorAddons.forEach((addOn) => {
+          responseData = addOn(responseData, statusCode, url, method) as ResponseData;
+        });
 
-                if (interceptor) {
-                  json = interceptor(json);
-                }
-
-                let responseDataOrPromise: Promise<{}> | {};
-
-                try {
-                  responseDataOrPromise = settings.responseInterceptor(json, statusCode, url, method);
-
-                  if (isPromise(responseDataOrPromise)) {
-                    json = await responseDataOrPromise;
-                  } else {
-                    json = responseDataOrPromise;
-                  }
-                } catch (e) {
-                  const interceptedError = settings.errorInterceptor({
-                    error: e,
-                    statusCode,
-                    body,
-                    queryParams: queryParams,
-                    url,
-                  });
-                  reject(interceptedError);
-                  throw interceptedError;
-                }
-
-                responseData = json as ResponseData;
-
-                // AddOns
-                settings.responseInterceptorAddons.forEach((addOn) => {
-                  responseData = addOn(responseData, statusCode, url, method) as ResponseData;
-                });
-              } catch (e) {
-                if (e?.message === 'JSON PARSING') {
-                  throw e;
-                }
-              } finally {
-                resolve(responseData);
-              }
-            } catch (e) {
-              reject(
-                settings.errorInterceptor({
-                  error: e,
-                  body: 'Cannot get body. This error is caused out of response process boundary.',
-                  queryParams: 'Cannot get queryParams. This error is caused out of response process boundary.',
-                  url,
-                }),
-              );
-            }
-          },
-        );
-      }),
-    );
+        return responseData;
+      } catch (e) {
+        if (typeof e.url === 'string') {
+          const { error, body, queryParams, url, statusCode } = e;
+          throw settings.errorInterceptor({
+            error: error,
+            body,
+            queryParams,
+            url,
+            statusCode,
+          });
+        } else {
+          throw settings.errorInterceptor({
+            error: e,
+            body: 'Unknown Error',
+            queryParams: 'Unknown Error',
+            url: 'Unknwon Error',
+          });
+        }
+      }
+    }) as any;
 
   return [
     callPromise,

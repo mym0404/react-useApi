@@ -22,5 +22,6 @@ module.exports = {
     '@typescript-eslint/camelcase': 0,
     '@typescript-eslint/indent': 0,
     '@typescript-eslint/explicit-function-return-type': 0,
+    'no-throw-literal': 0,
   },
 };

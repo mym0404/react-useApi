@@ -64,7 +64,7 @@ describe('Call - ', () => {
   });
 
   it("JSON parsing error doesn't affect interceptor process", async () => {
-    expect.assertions(0); // ensure that interceptor won't run
+    expect.assertions(1); // ensure that interceptor won't run
 
     fetchMock.mockReset();
     fetchMock.mockOnce(async () => ({
@@ -75,13 +75,18 @@ describe('Call - ', () => {
     const [dataPromise] = RestClient.GET('', {
       interceptor: (data: any) => {
         expect(data).toBeTruthy();
+        expect(data).toBeTruthy();
         return {
           user_name: data.first_name + data.last_name,
         };
       },
     });
 
-    await dataPromise();
+    try {
+      await dataPromise();
+    } catch (e) {
+      expect(e.message).toBe('json parse with response body is failed');
+    }
   });
 
   it('JSON parsing error will be rejected', async () => {
@@ -303,9 +308,9 @@ describe('Call - ', () => {
     expect.assertions(2);
     try {
       await dataPromise();
-    } catch (e) {
-      expect(e.name).toBe('Error');
-      expect(e.message).toBe('Status Code [200] exists in responseCodeBlackList [200,100]');
+    } catch ({ name, message }) {
+      expect(name).toBe('Error');
+      expect(message).toBe('Status Code [200] exists in responseCodeBlackList [200,100]');
     }
 
     clearApiDefaultSettings();
