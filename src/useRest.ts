@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 
 import { ApiResult } from './internal/ApiClient';
-import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
+import { JSONCandidate } from 'mj-studio-js-util';
 
 function isDirtyDependencies(dep1: any[] | undefined, dep2: any[] | undefined): boolean {
   if (!dep1 || !dep2) return true;

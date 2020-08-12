@@ -37,7 +37,6 @@ describe('constructUriWithQueryParams', () => {
       'policy/customer/',
       undefined,
       'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/',
-      true,
     );
     expect(constructedUri).toBe('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/policy/customer/');
   });

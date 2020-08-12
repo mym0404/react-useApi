@@ -1,6 +1,6 @@
 import { GlobalWithFetchMock } from 'jest-fetch-mock';
 
-declare const global;
+declare const global: any;
 
 const customGlobal: GlobalWithFetchMock = global as GlobalWithFetchMock;
 customGlobal.fetch = require('jest-fetch-mock');

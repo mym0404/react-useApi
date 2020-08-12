@@ -1,9 +1,8 @@
 import 'abortcontroller-polyfill';
 
-import convertObjectKeysCamelCaseFromSnakeCase, { JSONCandidate } from './convertObjectKeysCamelCaseFromSnakeCase';
+import { JSONCandidate, camelCaseObject, convertJsonKeys } from 'mj-studio-js-util';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
-import convertJsonKeys from './convertJsonKeys';
 
 declare const global;
 const AbortController = global.AbortController;
@@ -63,7 +62,7 @@ type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
 
 export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<{}> } = {
   CAMELCASE: async (response) => {
-    return convertObjectKeysCamelCaseFromSnakeCase(response);
+    return camelCaseObject(response);
   },
 };
 
@@ -249,14 +248,13 @@ function request<ResponseData = {}>(
         let responseData: any = {};
 
         try {
-          const contentType = response.headers.get('Content-Type');
-          const contentLength = +response.headers.get('Content-Length');
+          const contentType = response.headers.get('Content-Type') || '';
 
-          if (contentType !== 'application/json' && typeof contentLength === 'number' && contentLength > 0) {
+          if (contentType.includes('text') && (await response.text()).length) {
             throw new Error(`response content-type is not application/json, value: ${contentType}`);
           }
 
-          if (typeof contentLength === 'number' && contentLength > 0) {
+          if (contentType === 'application/json') {
             responseData = await response.json();
           }
         } catch (e) {

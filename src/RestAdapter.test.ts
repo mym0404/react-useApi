@@ -1,7 +1,7 @@
 import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from './index';
 
 import { FetchMock } from 'jest-fetch-mock';
-import { JSONCandidate } from './internal/convertObjectKeysCamelCaseFromSnakeCase';
+import { JSONCandidate } from 'mj-studio-js-util';
 import RestClient from './RestAdapter';
 
 jest.useRealTimers();
@@ -109,17 +109,23 @@ describe('Call - ', () => {
     }
   });
 
-  it('not application/json content type and content-length == 0 response is resolved with empty object', async () => {
+  it('not application/json content type and text is not empty will be rejected', async () => {
+    expect.assertions(1);
+
     fetchMock.mockReset();
     fetchMock.mockOnce(async () => ({
       status: 200,
-      body: 'not json!',
-      headers: { 'Content-Type': 'text/plain', 'Content-Length': '0' },
+      body: 'Server Error',
+      headers: { 'Content-Type': 'text/plain' },
     }));
 
     const [dataPromise] = RestClient.GET('');
 
-    expect(await dataPromise()).toEqual({});
+    try {
+      expect(await dataPromise()).toEqual({});
+    } catch (e) {
+      expect(e.message).toBe('response content-type is not application/json, value: text/plain');
+    }
   });
 
   it('JSON parsing error will be rejected', async () => {
