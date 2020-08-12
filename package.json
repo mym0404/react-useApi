@@ -10,7 +10,7 @@
     "c": "yarn lint && yarn tsc && yarn jest --coverage -u",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
     "test": "jest",
-    "publish": "npm publish --access=public"
+    "p": "yarn publish --access=public"
   },
   "private": false,
   "repository": {

@@ -1,6 +1,6 @@
 import 'abortcontroller-polyfill';
 
-import { JSONCandidate, camelCaseObject, convertJsonKeys } from 'mj-studio-js-util';
+import { JSONCandidate, camelCaseObject, convertJsonKeys } from '@mj-studio/js-util';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 

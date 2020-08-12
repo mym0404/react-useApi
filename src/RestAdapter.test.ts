@@ -1,7 +1,7 @@
 import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from './index';
 
 import { FetchMock } from 'jest-fetch-mock';
-import { JSONCandidate } from 'mj-studio-js-util';
+import { JSONCandidate } from '@mj-studio/js-util';
 import RestClient from './RestAdapter';
 
 jest.useRealTimers();
@@ -296,7 +296,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] custom errorInterceptor is set [WHEN] call [THEN] custom exception data is caught', async () => {
     setApiDefaultSettings({
-      errorInterceptor: function() {
+      errorInterceptor: function () {
         return { code: 444, message: 'satan' };
       },
     });
