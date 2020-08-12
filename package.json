@@ -1,20 +1,21 @@
 {
-  "name": "use-rest",
-  "version": "1.0.0-rc21",
-  "description": "Custom React hook for REST network call",
+  "name": "@mj-studio/react-native-rest-util",
+  "version": "1.0.0",
+  "description": "Custom React hook and Rest adapter for network call",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "homepage": "https://github.com/mym0404/useRest",
+  "homepage": "https://github.com/mym0404/react-native-rest-util",
   "scripts": {
     "prepare": "yarn c",
     "c": "yarn lint && yarn tsc && yarn jest --coverage -u",
     "lint": "eslint src --ext .ts,.tsx,.js,.jsx",
-    "test": "jest"
+    "test": "jest",
+    "publish": "npm publish --access=public"
   },
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/mym0404/useRest"
+    "url": "https://github.com/mym0404/react-native-rest-util"
   },
   "keywords": [
     "react-native"
@@ -27,7 +28,7 @@
   },
   "dependencies": {
     "abortcontroller-polyfill": "^1.4.0",
-    "mj-studio-js-util": "0.0.3"
+    "@mj-studio/js-util": "0.0.4"
   },
   "devDependencies": {
     "@dooboo/eslint-config": "^0.4.3",
