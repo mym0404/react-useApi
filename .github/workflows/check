@@ -1,0 +1,27 @@
+name: JS Check
+on:
+  push:
+    branches: 
+      - master
+
+defaults:
+  run:
+    shell: bash
+    working-directory: .
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    name: Check TypeScript lint, compile, test
+    if: "!contains(toJSON(github.event.commits.*.message), '[skip ci]')"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Set up Node environment
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+      - name: Yarn install
+        uses: bahmutov/npm-install@v1
+      - name: check
+        run: yarn c
