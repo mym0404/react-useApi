@@ -1,6 +1,21 @@
-# useRest [WIP, also README is WIP]
+## React Native REST utilities
 
-## Usage
+![JS Check](https://github.com/mym0404/react-native-rest-util/workflows/JS%20Check/badge.svg)
+
+---
+### Install
+
+```
+yarn add @mj-studio/react-native-rest-util
+npm install @mj-studio/react-native-rest-util
+```
+
+---
+### Usage
+
+* `GET`, `POST`, `PUT`, `DELETE`, `PATCH` : return a tuple that first item is function to create network call promise and second is function to abort network call
+* `useRest` : React custom hook for network call
+* `useCall` : lazy version of useRest
 
 ### 1. Set default settings for network call process.(Optional)
 
