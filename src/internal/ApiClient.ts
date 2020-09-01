@@ -34,7 +34,7 @@ export type RequestOptions<ResponseData> = {
   files?: ReactNativeFile[];
   headers?: Header;
   serializedNames?: { [P in string]: string };
-  interceptor?: (json: JSONCandidate) => ResponseData;
+  interceptor?: (json: any) => ResponseData;
 };
 
 export type Call = () => void;
