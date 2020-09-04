@@ -147,6 +147,34 @@ describe('Call - ', () => {
     }
   });
 
+  it('content-type of response header is application/json => result will be parsed', async () => {
+    fetchMock.resetMocks();
+    fetchMock.once(async () => {
+      return { status: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'mj' }) };
+    });
+
+    const [dataPromise] = RestClient.GET('');
+
+    const result = await dataPromise();
+    expect(result).toEqual({ name: 'mj' });
+  });
+
+  it('content-type of response header is application/json; charset=utf8; => result will be parsed', async () => {
+    fetchMock.resetMocks();
+    fetchMock.once(async () => {
+      return {
+        status: 200,
+        headers: { 'Content-Type': 'application/json; charset=utf8' },
+        body: JSON.stringify({ name: 'mj' }),
+      };
+    });
+
+    const [dataPromise] = RestClient.GET('');
+
+    const result = await dataPromise();
+    expect(result).toEqual({ name: 'mj' });
+  });
+
   it('Empty response => not fail', async () => {
     expect.assertions(0);
 

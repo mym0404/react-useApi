@@ -254,7 +254,7 @@ function request<ResponseData = {}>(
             throw new Error(`response content-type is not application/json, value: ${contentType}`);
           }
 
-          if (contentType === 'application/json') {
+          if (contentType.includes('application/json')) {
             responseData = await response.json();
           }
         } catch (e) {
