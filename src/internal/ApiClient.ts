@@ -87,6 +87,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   responseCodeWhiteListRange: { minInclude: number; maxExclude: number };
   responseCodeWhiteList: number[];
   responseCodeBlackList: number[];
+  serializedNames: Record<string, string>;
 };
 
 const initialSettings: Settings<{}> = {
@@ -103,6 +104,7 @@ const initialSettings: Settings<{}> = {
   responseCodeWhiteListRange: { minInclude: 200, maxExclude: 300 },
   responseCodeWhiteList: [],
   responseCodeBlackList: [],
+  serializedNames: {},
 };
 let settings = initialSettings;
 export function setApiDefaultSettings(options: Partial<typeof settings>): void {
@@ -267,8 +269,9 @@ function request<ResponseData = {}>(
           };
         }
 
-        if (serializedNames) {
-          responseData = convertJsonKeys(responseData, serializedNames);
+        const mergedSerializedNames = { ...settings.serializedNames, ...serializedNames };
+        if (Object.keys(mergedSerializedNames).length) {
+          responseData = convertJsonKeys(responseData, mergedSerializedNames);
         }
 
         if (interceptor) {

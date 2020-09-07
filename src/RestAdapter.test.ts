@@ -271,6 +271,44 @@ describe('Call - ', () => {
     clearApiDefaultSettings();
   });
 
+  it('serializedNames in settings converts json keys', async () => {
+    setApiDefaultSettings({ serializedNames: { before: 'after' } });
+
+    mockSimpleResponseOnce(null, {
+      before: 1,
+    });
+
+    const [dataPromise] = RestClient.GET('');
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({
+      after: 1,
+    });
+
+    clearApiDefaultSettings();
+  });
+
+  it('serializedNames request option is merged with serializedNames in settings', async () => {
+    setApiDefaultSettings({ serializedNames: { before: 'after' } });
+
+    mockSimpleResponseOnce(null, {
+      before: 1,
+      before2: 1,
+    });
+
+    const [dataPromise] = RestClient.GET('', { serializedNames: { before2: 'after2' } });
+
+    const data = await dataPromise();
+
+    expect(data).toEqual({
+      after: 1,
+      after2: 1,
+    });
+
+    clearApiDefaultSettings();
+  });
+
   it('throw in async responseInterceptor should invoke errorInterceptor and caught in catch block', async () => {
     expect.assertions(6);
 
