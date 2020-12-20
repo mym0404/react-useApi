@@ -25,5 +25,6 @@ module.exports = {
     'no-throw-literal': 0,
     'no-unused-expressions': 0,
     '@typescript-eslint/ban-types': 0,
+    '@typescript-eslint/no-non-null-assertion': 0,
   },
 };

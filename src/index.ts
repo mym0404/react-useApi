@@ -17,3 +17,4 @@ export {
   Call,
 } from './internal/ApiClient';
 export { default as useRest, useCall } from './useRest';
+export * from './useBindedApi';
