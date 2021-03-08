@@ -35,6 +35,8 @@ export type RequestOptions<ResponseData> = {
   headers?: Header;
   serializedNames?: { [P in string]: string };
   interceptor?: (json: any) => ResponseData;
+  mock?: ResponseData;
+  enableMock?: boolean;
 };
 
 export type Call = () => void;
@@ -196,7 +198,11 @@ function request<ResponseData = {}>(
   const callPromise: CallPromise<ResponseData> = () =>
     withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
       try {
-        const { queryParams, body, files, headers, serializedNames, interceptor } = options;
+        const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
+
+        if (enableMock) {
+          return mock;
+        }
 
         const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
 

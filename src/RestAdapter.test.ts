@@ -212,6 +212,17 @@ describe('Call - ', () => {
     }
   });
 
+  it('mock data is returnned if enabledMock = true', async () => {
+    const [dataPromise] = RestClient.GET('', {
+      enableMock: true,
+      mock: {
+        name: 'hello world!',
+      }
+    })
+    const data = await dataPromise();
+    expect(data).toEqual({name: 'hello world!'});
+  })
+
   it('REST adapter response interceptor + key serialization + camelCase addOn are working well together', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
 
