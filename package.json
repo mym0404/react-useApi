@@ -1,6 +1,6 @@
 {
   "name": "@mj-studio/react-native-rest-util",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Custom React hook and Rest adapter for network call",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
