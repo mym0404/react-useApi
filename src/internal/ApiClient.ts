@@ -75,7 +75,7 @@ export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   method: RestMethod,
 ) => Promise<ResponseData>;
 
-export type ErrorInterceptorParams = { error: any; statusCode?: number; url: string; body: any; queryParams: any };
+export type ErrorInterceptorParams = { error: any; statusCode?: number; url?: string; body?: any; queryParams?: any };
 export type ErrorInterceptor = (params: ErrorInterceptorParams) => any;
 
 export type Settings<ResponseData extends JSONCandidate> = {
@@ -313,12 +313,7 @@ function request<ResponseData = {}>(
             statusCode,
           });
         } else {
-          throw settings.errorInterceptor({
-            error: e,
-            body: 'Unknown Error',
-            queryParams: 'Unknown Error',
-            url: 'Unknwon Error',
-          });
+          throw settings.errorInterceptor({ error: e });
         }
       }
     }) as any;
