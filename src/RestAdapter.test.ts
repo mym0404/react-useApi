@@ -28,6 +28,16 @@ describe('Call - ', () => {
     mockSimpleResponseOnce();
   });
 
+  it('empty response will be empty', async () => {
+    fetchMock.resetMocks();
+    fetchMock.once(async () => {return {status: 200, body: undefined}})
+    const [dataPromise] = RestClient.GET('');
+
+    const data = await dataPromise();
+
+    expect(data).toBeUndefined();
+  })
+
   it('key serilization is working well', async () => {
     mockSimpleResponseOnce(null, {
       userName: 'mj',
