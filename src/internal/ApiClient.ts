@@ -253,7 +253,7 @@ function request<ResponseData = {}>(
           };
         }
 
-        let responseData: any;
+        let responseData: any = {};
 
         try {
           const contentType = response.headers.get('Content-Type') || '';
