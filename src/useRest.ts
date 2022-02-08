@@ -4,13 +4,19 @@ import { ApiResult } from './internal/ApiClient';
 import { JSONCandidate } from '@mj-studio/js-util';
 
 function isDirtyDependencies(dep1: any[] | undefined, dep2: any[] | undefined): boolean {
-  if (!dep1 || !dep2) return true;
-  if (dep1.length !== dep2.length) return true;
+  if (!dep1 || !dep2) {
+    return true;
+  }
+
+  if (dep1.length !== dep2.length) {
+    return true;
+  }
 
   for (let i = 0; i < dep1.length; i++) {
     if (typeof dep1[i] !== typeof dep2[i]) {
       return true;
     }
+
     if (!Object.is(dep1[i], dep2[i])) {
       return true;
     }
@@ -58,16 +64,19 @@ const reducer = <ResponseData>(state: State<ResponseData>, { type, payload }: Ac
         success: false,
       };
   }
+
   return state;
 };
 
 const callStart: ActionCreator = () => ({
   type: 'CallStart',
 });
+
 const callSuccess: ActionCreator<JSONCandidate> = (data: JSONCandidate) => ({
   type: 'CallSuccess',
   payload: data,
 });
+
 const callFail: ActionCreator<Error> = (error: Error) => ({
   type: 'CallFail',
   payload: error,
@@ -115,20 +124,24 @@ const useRest = <ResponseData>(
         if (fetching.current) {
           return;
         }
+
         onPendingRef.current?.();
         fetching.current = true;
         dispatch(callStart());
+
         const data = await call();
         if (!unmounted.current) {
           dispatch(callSuccess(data));
           onSuccessRef.current?.(data);
         }
+
         fetching.current = false;
       } catch (e) {
         if (!unmounted.current) {
           dispatch(callFail(e));
           onFailRef.current?.(e);
         }
+
         fetching.current = false;
       }
     },

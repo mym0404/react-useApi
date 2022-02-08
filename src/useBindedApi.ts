@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+
 import { ApiResult } from './internal/ApiClient';
 
 type Abort = () => void;
@@ -6,6 +7,7 @@ type UseBindThunk = {
   callApiWithBind: <T>(apiResult: ApiResult<T>) => Promise<T>;
   abortAll: () => void;
 };
+
 const useBindedApi = (): UseBindThunk => {
   const unmounted = useRef(false);
   useEffect(() => {
@@ -37,12 +39,9 @@ const useBindedApi = (): UseBindThunk => {
       /* Do not invoke handlers after component is unmounted */
       if (unmounted.current) {
         return {
-          then: () => {
-          },
-          catch: () => {
-          },
-          finally: () => {
-          },
+          then: () => {},
+          catch: () => {},
+          finally: () => {},
         } as Promise<T>;
       }
 
@@ -71,6 +70,7 @@ const useBindedApi = (): UseBindThunk => {
     });
     abortsRef.current = [];
   }, []);
+
   useEffect(() => {
     return () => {
       abortAll();

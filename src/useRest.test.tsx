@@ -1,13 +1,13 @@
-import { ApiResult, useRest } from './index';
-import { act, renderHook } from '@testing-library/react-hooks';
+import {ApiResult, useRest} from './index';
+import {act, renderHook} from '@testing-library/react-hooks';
 
-import { useCall } from './useRest';
+import {useCall} from './useRest';
 
 type ResponseType = {
   name: string;
   age: number;
 };
-const responseData: ResponseType = { name: 'mj', age: 24 };
+const responseData: ResponseType = {name: 'mj', age: 24};
 let unsubscribeMock = jest.fn();
 let dataPromiseMock = jest.fn();
 let apiResultMock: ApiResult<ResponseType>;
@@ -23,7 +23,7 @@ describe('useRest', () => {
   });
 
   it('hot api call should change states corretly', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useRest(apiResultMock, []));
+    const {result, waitForNextUpdate} = renderHook(() => useRest(apiResultMock, []));
 
     expect(result.current.error).toBe(null);
     expect(result.current.loading).toBe(true);
@@ -38,7 +38,7 @@ describe('useRest', () => {
   });
 
   it('cold api call should change states corretly', async () => {
-    const { result, waitForNextUpdate } = renderHook(() => useCall(apiResultMock, []));
+    const {result, waitForNextUpdate} = renderHook(() => useCall(apiResultMock, []));
 
     expect(result.current.error).toBe(null);
     expect(result.current.loading).toBe(false);
@@ -61,7 +61,7 @@ describe('useRest', () => {
     const failedApi = jest.fn().mockRejectedValue(new Error('api is failed'));
     const apiResultMock: ApiResult = [failedApi, unsubscribeMock];
 
-    const { result, waitForNextUpdate } = renderHook(() => useRest(apiResultMock));
+    const {result, waitForNextUpdate} = renderHook(() => useRest(apiResultMock));
 
     await waitForNextUpdate();
 
@@ -69,7 +69,7 @@ describe('useRest', () => {
   });
 
   it('dependencies will be dirty', async () => {
-    const { rerender, waitForNextUpdate } = renderHook(() => useRest(apiResultMock, dependencies));
+    const {rerender, waitForNextUpdate} = renderHook(() => useRest(apiResultMock, dependencies));
 
     await waitForNextUpdate();
     expect(dataPromiseMock).toBeCalledTimes(1);
@@ -101,7 +101,7 @@ describe('useRest', () => {
   });
 
   it('unmount will unsubscribe', async () => {
-    const { rerender, waitForNextUpdate, unmount } = renderHook(() => useRest(apiResultMock));
+    const {rerender, waitForNextUpdate, unmount} = renderHook(() => useRest(apiResultMock));
     unmount();
   });
 
@@ -109,7 +109,7 @@ describe('useRest', () => {
     const failedApi = jest.fn().mockRejectedValue(new Error('api is failed'));
     const apiResultMock: ApiResult = [failedApi, unsubscribeMock];
 
-    const { rerender, waitForNextUpdate, unmount } = renderHook(() => useRest(apiResultMock));
+    const {rerender, waitForNextUpdate, unmount} = renderHook(() => useRest(apiResultMock));
     unmount();
   });
 });

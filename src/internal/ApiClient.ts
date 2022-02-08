@@ -5,6 +5,7 @@ import { JSONCandidate, camelCaseObject, convertJsonKeys } from '@mj-studio/js-u
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 
 declare const global;
+
 const AbortController = global.AbortController;
 
 export type RestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -109,12 +110,15 @@ const initialSettings: Settings<{}> = {
   serializedNames: {},
 };
 let settings = initialSettings;
+
 export function setApiDefaultSettings(options: Partial<typeof settings>): void {
   settings = { ...initialSettings, ...options };
 }
+
 export function clearApiDefaultSettings(): void {
   settings = initialSettings;
 }
+
 export function getApiDefaultSettings(): Partial<typeof settings> {
   return settings;
 }
@@ -166,14 +170,18 @@ function requestFormUrlEncoded(
   }
 
   requestInit.headers && (requestInit.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8');
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  if (!/GET/i.test(requestInit.method!)) requestInit.body = encodedBody;
+
+  if (!/GET/i.test(requestInit.method!)) {
+    requestInit.body = encodedBody;
+  }
+
   return fetch(uri, requestInit);
 }
 
 function requestJson(uri: string, requestInit: RequestInit, body?: object): Promise<Response> {
   requestInit.headers && (requestInit.headers['Content-Type'] = 'application/json');
   body && (requestInit.body = JSON.stringify(body));
+
   return fetch(uri, requestInit);
 }
 

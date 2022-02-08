@@ -14,6 +14,7 @@ export function constructUriWithQueryParams(uri: string, queryParams?: object, b
           parameters.set(key, value);
         });
     }
+
     queryParams &&
       Object.entries(queryParams).forEach(([key, value]) => {
         if (value !== undefined) {
@@ -35,6 +36,7 @@ export function constructUriWithQueryParams(uri: string, queryParams?: object, b
       parameters.forEach((value, key) => {
         queryParamsString += `${encodeURIComponent(key)}=${encodeURIComponent(value)}&`;
       });
+
       return urlWithoutQueryParams + '?' + queryParamsString.slice(0, -1);
     }
   } catch (e) {

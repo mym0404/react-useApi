@@ -1,5 +1,9 @@
 module.exports = {
   root: true,
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    requireConfigFile: false,
+  },
   extends: '@dooboo/eslint-config',
   plugins: ['react-hooks'],
   rules: {
@@ -26,5 +30,6 @@ module.exports = {
     'no-unused-expressions': 0,
     '@typescript-eslint/ban-types': 0,
     '@typescript-eslint/no-non-null-assertion': 0,
+    '@typescript-eslint/no-shadow': 0,
   },
 };
