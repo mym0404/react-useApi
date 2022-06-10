@@ -34,10 +34,8 @@ export type RequestOptions<ResponseData> = {
   enableMock?: boolean;
 };
 
-export type Call = () => void;
-export type CallPromise<ResponseData> = () => Promise<ResponseData>;
 export type Unsubscribe = () => void;
-export type ApiResult<ResponseData = {}> = CallPromise<ResponseData>;
+export type ApiResult<ResponseData = {}> = Promise<ResponseData>;
 
 function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
   return Promise.race([
@@ -194,127 +192,126 @@ function request<ResponseData = {}>(
       method: method,
     });
 
-  return () =>
-    withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
-      try {
-        const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
+  return withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
+    try {
+      const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
 
-        if (enableMock) {
-          return mock;
-        }
-
-        const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
-
-        const requestInitWithoutBody: RequestInit = {
-          headers: headers,
-          method: method,
-        };
-
-        let responsePromise: Promise<Response>;
-
-        if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
-          responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
-        } else if (
-          headers?.['Content-Type'] === 'application/x-www-form-urlencoded;charset=UTF-8' ||
-          body instanceof URLSearchParams
-        ) {
-          responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
-        } else {
-          responsePromise = requestJson(constructedUri, requestInitWithoutBody, body);
-        }
-
-        const response = await responsePromise;
-
-        const { status: statusCode } = response;
-        const { minInclude: min, maxExclude: max } = settings.responseCodeWhiteListRange;
-        const whiteList = settings.responseCodeWhiteList;
-        const blackList = settings.responseCodeBlackList;
-
-        if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
-          throw {
-            error: new Error(
-              // eslint-disable-next-line max-len
-              `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
-            ),
-            body,
-            queryParams,
-            url,
-            statusCode,
-          };
-        } else if (blackList.includes(statusCode)) {
-          throw {
-            error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
-            body,
-            queryParams,
-            url,
-            statusCode,
-          };
-        }
-
-        let responseData: any = {};
-
-        try {
-          const contentType = response.headers.get('Content-Type') || '';
-
-          if (contentType.includes('text') && (await response.text()).length) {
-            throw new Error(`response content-type is not application/json, value: ${contentType}`);
-          }
-
-          if (contentType.includes('application/json')) {
-            responseData = await response.json();
-          }
-        } catch (e) {
-          throw {
-            error: e,
-            body,
-            queryParams,
-            url,
-            statusCode,
-          };
-        }
-
-        const mergedSerializedNames = { ...settings.serializedNames, ...serializedNames };
-        if (Object.keys(mergedSerializedNames).length) {
-          responseData = convertJsonKeys(responseData, mergedSerializedNames);
-        }
-
-        if (interceptor) {
-          responseData = interceptor(responseData as any);
-        }
-
-        try {
-          responseData = await settings.responseInterceptor(responseData, statusCode, url, method);
-        } catch (e) {
-          throw {
-            error: e,
-            body,
-            queryParams,
-            url,
-            statusCode,
-          };
-        }
-
-        // AddOns
-        for (const addOn of settings.responseInterceptorAddons) {
-          responseData = await addOn(responseData, statusCode, url, method);
-        }
-
-        return responseData;
-      } catch (e) {
-        if (typeof e.url === 'string') {
-          const { error, body, queryParams, url, statusCode } = e;
-          throw settings.errorInterceptor({
-            error: error,
-            body,
-            queryParams,
-            url,
-            statusCode,
-          });
-        } else {
-          throw settings.errorInterceptor({ error: e });
-        }
+      if (enableMock) {
+        return mock;
       }
-    }) as any;
+
+      const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
+
+      const requestInitWithoutBody: RequestInit = {
+        headers: headers,
+        method: method,
+      };
+
+      let responsePromise: Promise<Response>;
+
+      if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
+        responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
+      } else if (
+        headers?.['Content-Type'] === 'application/x-www-form-urlencoded;charset=UTF-8' ||
+        body instanceof URLSearchParams
+      ) {
+        responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
+      } else {
+        responsePromise = requestJson(constructedUri, requestInitWithoutBody, body);
+      }
+
+      const response = await responsePromise;
+
+      const { status: statusCode } = response;
+      const { minInclude: min, maxExclude: max } = settings.responseCodeWhiteListRange;
+      const whiteList = settings.responseCodeWhiteList;
+      const blackList = settings.responseCodeBlackList;
+
+      if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
+        throw {
+          error: new Error(
+            // eslint-disable-next-line max-len
+            `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
+          ),
+          body,
+          queryParams,
+          url,
+          statusCode,
+        };
+      } else if (blackList.includes(statusCode)) {
+        throw {
+          error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
+          body,
+          queryParams,
+          url,
+          statusCode,
+        };
+      }
+
+      let responseData: any = {};
+
+      try {
+        const contentType = response.headers.get('Content-Type') || '';
+
+        if (contentType.includes('text') && (await response.text()).length) {
+          throw new Error(`response content-type is not application/json, value: ${contentType}`);
+        }
+
+        if (contentType.includes('application/json')) {
+          responseData = await response.json();
+        }
+      } catch (e) {
+        throw {
+          error: e,
+          body,
+          queryParams,
+          url,
+          statusCode,
+        };
+      }
+
+      const mergedSerializedNames = { ...settings.serializedNames, ...serializedNames };
+      if (Object.keys(mergedSerializedNames).length) {
+        responseData = convertJsonKeys(responseData, mergedSerializedNames);
+      }
+
+      if (interceptor) {
+        responseData = interceptor(responseData as any);
+      }
+
+      try {
+        responseData = await settings.responseInterceptor(responseData, statusCode, url, method);
+      } catch (e) {
+        throw {
+          error: e,
+          body,
+          queryParams,
+          url,
+          statusCode,
+        };
+      }
+
+      // AddOns
+      for (const addOn of settings.responseInterceptorAddons) {
+        responseData = await addOn(responseData, statusCode, url, method);
+      }
+
+      return responseData;
+    } catch (e) {
+      if (typeof e.url === 'string') {
+        const { error, body, queryParams, url, statusCode } = e;
+        throw settings.errorInterceptor({
+          error: error,
+          body,
+          queryParams,
+          url,
+          statusCode,
+        });
+      } else {
+        throw settings.errorInterceptor({ error: e });
+      }
+    }
+  }) as any;
 }
 
 export default request;

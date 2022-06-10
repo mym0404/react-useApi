@@ -34,9 +34,7 @@ describe('Call - ', () => {
       userAge: 24,
     });
 
-    const dataPromise = RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
-
-    const data = await dataPromise();
+    const data = await RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
 
     expect(data).toEqual({
       name: 'mj',
@@ -57,7 +55,7 @@ describe('Call - ', () => {
     });
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(e.message).toBe('my error');
     }
@@ -84,7 +82,7 @@ describe('Call - ', () => {
     });
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(e.message).toBe('response content-type is not application/json, value: text/plain');
     }
@@ -103,7 +101,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(e.message).toBe('response content-type is not application/json, value: text/plain');
     }
@@ -122,7 +120,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      expect(await dataPromise()).toEqual({});
+      expect(await dataPromise).toEqual({});
     } catch (e) {
       expect(e.message).toBe('response content-type is not application/json, value: text/plain');
     }
@@ -141,7 +139,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(1).toBe(1);
     }
@@ -155,7 +153,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('');
 
-    const result = await dataPromise();
+    const result = await dataPromise;
     expect(result).toEqual({ name: 'mj' });
   });
 
@@ -171,7 +169,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('');
 
-    const result = await dataPromise();
+    const result = await dataPromise;
     expect(result).toEqual({ name: 'mj' });
   });
 
@@ -187,7 +185,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(1).toBe(1);
     }
@@ -206,7 +204,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(1).toBe(1);
     }
@@ -219,7 +217,7 @@ describe('Call - ', () => {
         name: 'hello world!',
       }
     })
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data).toEqual({name: 'hello world!'});
   })
 
@@ -238,7 +236,7 @@ describe('Call - ', () => {
       }),
     });
 
-    const data = await dataPromise();
+    const data = await dataPromise;
 
     expect(data).toEqual({
       userName: 'mj',
@@ -257,7 +255,7 @@ describe('Call - ', () => {
       interceptor: ({ user_first_name, user_last_name }: any) => ({ user_name: user_first_name + user_last_name }),
     });
 
-    const data = await dataPromise();
+    const data = await dataPromise;
 
     expect(data).toEqual({ user_name: 'mj' });
   });
@@ -272,7 +270,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('', { serializedNames: { user_name: 'name_name', user_age: 'age_age' } });
 
-    const data = await dataPromise();
+    const data = await dataPromise;
 
     expect(data).toEqual({
       nameName: 'mj',
@@ -291,7 +289,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('');
 
-    const data = await dataPromise();
+    const data = await dataPromise;
 
     expect(data).toEqual({
       after: 1,
@@ -310,7 +308,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('', { serializedNames: { before2: 'after2' } });
 
-    const data = await dataPromise();
+    const data = await dataPromise;
 
     expect(data).toEqual({
       after: 1,
@@ -341,7 +339,7 @@ describe('Call - ', () => {
 
     const dataPromise = RestClient.GET('');
     try {
-      await dataPromise();
+      await dataPromise;
     } catch ({ code, message }) {
       expect(code).toBe(42);
       expect(message).toBe('hi');
@@ -360,7 +358,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('ftp://network/error/');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch ({ error, statusCode }) {
       expect(error.name).toBe('TypeError');
       expect(error.message).toBe('Only HTTP(S) protocols are supported');
@@ -392,7 +390,7 @@ describe('Call - ', () => {
     expect.assertions(2);
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       expect(e.code).toBe(444);
       expect(e.message).toBe('satan');
@@ -410,7 +408,7 @@ describe('Call - ', () => {
 
     expect.assertions(2);
 
-    return dataPromise()
+    return dataPromise
       .then()
       .catch((e) => {
         expect(e.name).toBe('Error');
@@ -433,7 +431,7 @@ describe('Call - ', () => {
     });
     const dataPromise = RestClient.GET<{ name: string }>('');
 
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data.name).toBe('mj');
 
     clearApiDefaultSettings();
@@ -452,7 +450,7 @@ describe('Call - ', () => {
     });
     const dataPromise = RestClient.GET<{ name: string }>('');
 
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data.name).toBe('mj');
 
     clearApiDefaultSettings();
@@ -469,7 +467,7 @@ describe('Call - ', () => {
 
     expect.assertions(2);
     try {
-      await dataPromise();
+      await dataPromise;
     } catch ({ name, message }) {
       expect(name).toBe('Error');
       expect(message).toBe('Status Code [200] exists in responseCodeBlackList [200,100]');
@@ -486,7 +484,7 @@ describe('Call - ', () => {
 
     expect.assertions(2);
 
-    return dataPromise()
+    return dataPromise
       .then(() => {
         clearApiDefaultSettings();
       })
@@ -506,7 +504,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('');
 
     try {
-      await dataPromise();
+      await dataPromise;
     } catch (e) {
       done();
     }
@@ -515,14 +513,14 @@ describe('Call - ', () => {
   it('[GIVEN] requestInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ requestInterceptor: (request) => Promise.resolve(request) });
     const dataPromise = RestClient.GET('');
-    await dataPromise();
+    await dataPromise;
     clearApiDefaultSettings();
   });
 
   it('[GIVEN] responseInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ responseInterceptor: (response) => Promise.resolve(response) });
     const dataPromise = RestClient.GET('');
-    await dataPromise();
+    await dataPromise;
     clearApiDefaultSettings();
   });
 
@@ -530,7 +528,7 @@ describe('Call - ', () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, { my_name: 'mj' });
     const dataPromise = RestClient.GET<{ myName: string }>('');
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data.myName).toBe('mj');
     clearApiDefaultSettings();
   });
@@ -538,7 +536,7 @@ describe('Call - ', () => {
   it('[GIVEN] response with array [THEN] call success', async () => {
     mockSimpleResponseOnce(null, [1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
     const dataPromise = RestClient.GET<number[]>('');
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
   });
 
@@ -546,7 +544,7 @@ describe('Call - ', () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, ['2001', '2002', '2003']);
     const dataPromise = RestClient.GET<string[]>('');
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data).toEqual(['2001', '2002', '2003']);
     clearApiDefaultSettings();
   });
@@ -555,7 +553,7 @@ describe('Call - ', () => {
     setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/' });
     mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
     const dataPromise = RestClient.GET<{ my_name: string }>('getMyName');
-    const data = await dataPromise();
+    const data = await dataPromise;
     expect(data.my_name).toBe('mj');
     clearApiDefaultSettings();
   });
@@ -563,7 +561,7 @@ describe('Call - ', () => {
   describe.each(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])('RestAdapter[%p] - ', (restMethod): void => {
     it('[GIVEN] application/json [THEN] should be success', async () => {
       const dataPromise = RestClient[restMethod]<{ success: boolean }>('');
-      const { success } = await dataPromise();
+      const { success } = await dataPromise;
       expect(success).toBe(true);
     });
 
@@ -573,11 +571,11 @@ describe('Call - ', () => {
       });
 
       if (restMethod !== 'GET') {
-        const { success } = await dataPromise();
+        const { success } = await dataPromise;
         expect(success).toBe(true);
       } else {
         try {
-          await dataPromise();
+          await dataPromise;
         } catch (e) {
           expect(e.name).toBe('TypeError');
           expect(e.message).toBe('Request with GET/HEAD method cannot have body');
@@ -589,7 +587,7 @@ describe('Call - ', () => {
       const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
       });
-      const { success } = await dataPromise();
+      const { success } = await dataPromise;
       expect(success).toBe(true);
     });
 
@@ -599,7 +597,7 @@ describe('Call - ', () => {
       const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         body,
       });
-      const { success } = await dataPromise();
+      const { success } = await dataPromise;
       expect(success).toBe(true);
     });
 
@@ -611,11 +609,11 @@ describe('Call - ', () => {
       });
 
       if (restMethod !== 'GET') {
-        const { success } = await dataPromise();
+        const { success } = await dataPromise;
         expect(success).toBe(true);
       } else {
         try {
-          await dataPromise();
+          await dataPromise;
         } catch (e) {
           expect(e.name).toBe('TypeError');
           expect(e.message).toBe('Request with GET/HEAD method cannot have body');
@@ -629,11 +627,11 @@ describe('Call - ', () => {
       });
 
       if (restMethod !== 'GET') {
-        const { success } = await dataPromise();
+        const { success } = await dataPromise;
         expect(success).toBe(true);
       } else {
         try {
-          await dataPromise();
+          await dataPromise;
         } catch (e) {
           expect(e.name).toBe('TypeError');
           expect(e.message).toBe('Request with GET/HEAD method cannot have body');
@@ -647,11 +645,11 @@ describe('Call - ', () => {
       });
 
       if (restMethod !== 'GET') {
-        const { success } = await dataPromise();
+        const { success } = await dataPromise;
         expect(success).toBe(true);
       } else {
         try {
-          await dataPromise();
+          await dataPromise;
         } catch (e) {
           expect(e.name).toBe('TypeError');
           expect(e.message).toBe('Request with GET/HEAD method cannot have body');
@@ -666,11 +664,11 @@ describe('Call - ', () => {
       });
 
       if (restMethod !== 'GET') {
-        const { success } = await dataPromise();
+        const { success } = await dataPromise;
         expect(success).toBe(true);
       } else {
         try {
-          await dataPromise();
+          await dataPromise;
         } catch (e) {
           expect(e.name).toBe('TypeError');
           expect(e.message).toBe('Request with GET/HEAD method cannot have body');
