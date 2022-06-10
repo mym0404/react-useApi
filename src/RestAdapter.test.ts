@@ -34,7 +34,7 @@ describe('Call - ', () => {
       userAge: 24,
     });
 
-    const [dataPromise] = RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
+    const dataPromise = RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
 
     const data = await dataPromise();
 
@@ -48,7 +48,7 @@ describe('Call - ', () => {
     fetchMock.mockReset();
     fetchMock.mockReject(new Error('my error'));
 
-    const [dataPromise] = RestClient.GET('', {
+    const dataPromise = RestClient.GET('', {
       interceptor: (data: any) => {
         return {
           user_name: data.first_name + data.last_name,
@@ -73,7 +73,7 @@ describe('Call - ', () => {
       headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
     }));
 
-    const [dataPromise] = RestClient.GET('', {
+    const dataPromise = RestClient.GET('', {
       interceptor: (data: any) => {
         expect(data).toBeTruthy();
         expect(data).toBeTruthy();
@@ -100,7 +100,7 @@ describe('Call - ', () => {
       headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
     }));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       await dataPromise();
@@ -119,7 +119,7 @@ describe('Call - ', () => {
       headers: { 'Content-Type': 'text/plain' },
     }));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       expect(await dataPromise()).toEqual({});
@@ -138,7 +138,7 @@ describe('Call - ', () => {
       headers: { 'Content-Type': 'text/plain', 'Content-Length': '3' },
     }));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       await dataPromise();
@@ -153,7 +153,7 @@ describe('Call - ', () => {
       return { status: 200, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'mj' }) };
     });
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     const result = await dataPromise();
     expect(result).toEqual({ name: 'mj' });
@@ -169,7 +169,7 @@ describe('Call - ', () => {
       };
     });
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     const result = await dataPromise();
     expect(result).toEqual({ name: 'mj' });
@@ -184,7 +184,7 @@ describe('Call - ', () => {
       body: undefined,
     }));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       await dataPromise();
@@ -203,7 +203,7 @@ describe('Call - ', () => {
       headers: { 'Content-Type': 'text/html', 'Content-Length': '3' },
     }));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       await dataPromise();
@@ -213,7 +213,7 @@ describe('Call - ', () => {
   });
 
   it('mock data is returnned if enabledMock = true', async () => {
-    const [dataPromise] = RestClient.GET('', {
+    const dataPromise = RestClient.GET('', {
       enableMock: true,
       mock: {
         name: 'hello world!',
@@ -231,7 +231,7 @@ describe('Call - ', () => {
       user_last_name: 'j',
     });
 
-    const [dataPromise] = RestClient.GET('', {
+    const dataPromise = RestClient.GET('', {
       serializedNames: { user_first_name: 'first_name', user_last_name: 'last_name' },
       interceptor: (data: any) => ({
         user_name: data.first_name + data.last_name,
@@ -253,7 +253,7 @@ describe('Call - ', () => {
       user_last_name: 'j',
     });
 
-    const [dataPromise] = RestClient.GET('', {
+    const dataPromise = RestClient.GET('', {
       interceptor: ({ user_first_name, user_last_name }: any) => ({ user_name: user_first_name + user_last_name }),
     });
 
@@ -270,7 +270,7 @@ describe('Call - ', () => {
       user_age: 24,
     });
 
-    const [dataPromise] = RestClient.GET('', { serializedNames: { user_name: 'name_name', user_age: 'age_age' } });
+    const dataPromise = RestClient.GET('', { serializedNames: { user_name: 'name_name', user_age: 'age_age' } });
 
     const data = await dataPromise();
 
@@ -289,7 +289,7 @@ describe('Call - ', () => {
       before: 1,
     });
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     const data = await dataPromise();
 
@@ -308,7 +308,7 @@ describe('Call - ', () => {
       before2: 1,
     });
 
-    const [dataPromise] = RestClient.GET('', { serializedNames: { before2: 'after2' } });
+    const dataPromise = RestClient.GET('', { serializedNames: { before2: 'after2' } });
 
     const data = await dataPromise();
 
@@ -339,7 +339,7 @@ describe('Call - ', () => {
       },
     });
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
     try {
       await dataPromise();
     } catch ({ code, message }) {
@@ -357,7 +357,7 @@ describe('Call - ', () => {
     fetchMock.resetMocks();
     fetchMock.disableMocks();
 
-    const [dataPromise] = RestClient.GET('ftp://network/error/');
+    const dataPromise = RestClient.GET('ftp://network/error/');
 
     try {
       await dataPromise();
@@ -387,7 +387,7 @@ describe('Call - ', () => {
         }),
       };
     });
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     expect.assertions(2);
 
@@ -406,7 +406,7 @@ describe('Call - ', () => {
     fetchMock.once(async () => {
       return { status: 400, body: JSON.stringify({}) };
     });
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     expect.assertions(2);
 
@@ -431,7 +431,7 @@ describe('Call - ', () => {
         headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
       };
     });
-    const [dataPromise] = RestClient.GET<{ name: string }>('');
+    const dataPromise = RestClient.GET<{ name: string }>('');
 
     const data = await dataPromise();
     expect(data.name).toBe('mj');
@@ -450,7 +450,7 @@ describe('Call - ', () => {
         headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
       };
     });
-    const [dataPromise] = RestClient.GET<{ name: string }>('');
+    const dataPromise = RestClient.GET<{ name: string }>('');
 
     const data = await dataPromise();
     expect(data.name).toBe('mj');
@@ -465,7 +465,7 @@ describe('Call - ', () => {
     fetchMock.once(async () => {
       return { status: 200, body: JSON.stringify({ name: 'mj' }) };
     });
-    const [dataPromise] = RestClient.GET<{ name: string }>('');
+    const dataPromise = RestClient.GET<{ name: string }>('');
 
     expect.assertions(2);
     try {
@@ -478,24 +478,11 @@ describe('Call - ', () => {
     clearApiDefaultSettings();
   });
 
-  it('[WHEN] unsubscribe [THEN] abort function of AbortController will be invoked', async () => {
-    const [dataPromise, unsubscribe] = RestClient.GET('');
-    unsubscribe();
-
-    expect.assertions(2);
-    try {
-      await dataPromise();
-    } catch (e) {
-      expect(e.name).toBe('AbortError');
-      expect(e.message).toBe('The operation was aborted. ');
-    }
-  });
-
   it('[GIVEN] Network Error [WHEN] request api [THEN] promise will be rejected', () => {
     fetchMock.resetMocks();
     fetchMock.mockRejectOnce(new Error('Network Fail!'));
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     expect.assertions(2);
 
@@ -516,7 +503,7 @@ describe('Call - ', () => {
       return { status: 200, headers: { 'Content-Type': 'application/json', 'Content-Length': '3' } };
     });
 
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
 
     try {
       await dataPromise();
@@ -527,14 +514,14 @@ describe('Call - ', () => {
 
   it('[GIVEN] requestInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ requestInterceptor: (request) => Promise.resolve(request) });
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
     await dataPromise();
     clearApiDefaultSettings();
   });
 
   it('[GIVEN] responseInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ responseInterceptor: (response) => Promise.resolve(response) });
-    const [dataPromise] = RestClient.GET('');
+    const dataPromise = RestClient.GET('');
     await dataPromise();
     clearApiDefaultSettings();
   });
@@ -542,7 +529,7 @@ describe('Call - ', () => {
   it('[GIVEN] with CAMELCASE response interceptor addon [WHEN] response is snake_case [THEN] response data is camelCase', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, { my_name: 'mj' });
-    const [dataPromise] = RestClient.GET<{ myName: string }>('');
+    const dataPromise = RestClient.GET<{ myName: string }>('');
     const data = await dataPromise();
     expect(data.myName).toBe('mj');
     clearApiDefaultSettings();
@@ -550,7 +537,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] response with array [THEN] call success', async () => {
     mockSimpleResponseOnce(null, [1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
-    const [dataPromise] = RestClient.GET<number[]>('');
+    const dataPromise = RestClient.GET<number[]>('');
     const data = await dataPromise();
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
   });
@@ -558,7 +545,7 @@ describe('Call - ', () => {
   it('[GIVEN] response with array [THEN] call success2', async () => {
     setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
     mockSimpleResponseOnce(null, ['2001', '2002', '2003']);
-    const [dataPromise] = RestClient.GET<string[]>('');
+    const dataPromise = RestClient.GET<string[]>('');
     const data = await dataPromise();
     expect(data).toEqual(['2001', '2002', '2003']);
     clearApiDefaultSettings();
@@ -567,7 +554,7 @@ describe('Call - ', () => {
   it('[GIVEN] baseUrl set [THEN] call success', async () => {
     setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/' });
     mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
-    const [dataPromise] = RestClient.GET<{ my_name: string }>('getMyName');
+    const dataPromise = RestClient.GET<{ my_name: string }>('getMyName');
     const data = await dataPromise();
     expect(data.my_name).toBe('mj');
     clearApiDefaultSettings();
@@ -575,13 +562,13 @@ describe('Call - ', () => {
 
   describe.each(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])('RestAdapter[%p] - ', (restMethod): void => {
     it('[GIVEN] application/json [THEN] should be success', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('');
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('');
       const { success } = await dataPromise();
       expect(success).toBe(true);
     });
 
     it('[GIVEN] application/json [WHEN] with object body [THEN] should be success without GET', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         body: { name: 'dooboo' },
       });
 
@@ -599,7 +586,7 @@ describe('Call - ', () => {
     });
 
     it('[GIVEN] application/x-www-form-urlencoded;charset=UTF-8 [WHEN] by specify header [THEN] should be success', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
       });
       const { success } = await dataPromise();
@@ -609,7 +596,7 @@ describe('Call - ', () => {
     it('[GIVEN] application/x-www-form-urlencoded;charset=UTF-8 [WHEN] by URLSearchParams body [THEN] should be success', async () => {
       const body = new URLSearchParams();
       body.set('name', 'dooboo');
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         body,
       });
       const { success } = await dataPromise();
@@ -618,7 +605,7 @@ describe('Call - ', () => {
 
     it('[GIVEN] application/x-www-form-urlencoded;charset=UTF-8 [WHEN] by specify header with object body [THEN] should be success without GET', async () => {
       const body = { name: 'dooboo' };
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
         body,
       });
@@ -637,7 +624,7 @@ describe('Call - ', () => {
     });
 
     it('[GIVEN] multipart/form-data [WHEN] by header [THEN] should be success without GET', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
@@ -655,7 +642,7 @@ describe('Call - ', () => {
     });
 
     it('[GIVEN] multipart/form-data [WHEN] by file [THEN] should be success without GET', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         files: [{ key: 'thumbnail', file: { uri: 'file://my/video/file/path.mp4', name: 'video', type: 'video/*' } }],
       });
 
@@ -673,7 +660,7 @@ describe('Call - ', () => {
     });
 
     it('[GIVEN] multipart/form-data [WHEN] by header with object body [THEN] should be success without GET', async () => {
-      const [dataPromise] = RestClient[restMethod]<{ success: boolean }>('', {
+      const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         headers: { 'Content-Type': 'multipart/form-data' },
         body: { name: 'dooboo' },
       });

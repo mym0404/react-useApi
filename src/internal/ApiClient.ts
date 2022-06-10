@@ -1,12 +1,6 @@
-import 'abortcontroller-polyfill';
-
 import { JSONCandidate, camelCaseObject, convertJsonKeys } from '@mj-studio/js-util';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
-
-declare const global;
-
-const AbortController = global.AbortController;
 
 export type RestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 export type Header = { [P in string]: string } & {
@@ -43,7 +37,7 @@ export type RequestOptions<ResponseData> = {
 export type Call = () => void;
 export type CallPromise<ResponseData> = () => Promise<ResponseData>;
 export type Unsubscribe = () => void;
-export type ApiResult<ResponseData = {}> = [CallPromise<ResponseData>, Unsubscribe];
+export type ApiResult<ResponseData = {}> = CallPromise<ResponseData>;
 
 function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
   return Promise.race([
@@ -190,9 +184,6 @@ function request<ResponseData = {}>(
   url: string,
   options: RequestOptions<ResponseData> = { headers: settings.headers },
 ): ApiResult<ResponseData> {
-  const abortController = new AbortController();
-  const abortSignal = abortController.signal;
-
   options.headers = options.headers || settings.headers;
 
   const optionsPromiseThunk = () =>
@@ -203,7 +194,7 @@ function request<ResponseData = {}>(
       method: method,
     });
 
-  const callPromise: CallPromise<ResponseData> = () =>
+  return () =>
     withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
       try {
         const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
@@ -217,7 +208,6 @@ function request<ResponseData = {}>(
         const requestInitWithoutBody: RequestInit = {
           headers: headers,
           method: method,
-          signal: abortSignal,
         };
 
         let responsePromise: Promise<Response>;
@@ -325,13 +315,6 @@ function request<ResponseData = {}>(
         }
       }
     }) as any;
-
-  return [
-    callPromise,
-    (): void => {
-      abortController.abort();
-    },
-  ];
 }
 
 export default request;
