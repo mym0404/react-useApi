@@ -232,7 +232,7 @@ describe('Call - ', () => {
     const dataPromise = RestClient.GET('', {
       serializedNames: { user_first_name: 'first_name', user_last_name: 'last_name' },
       interceptor: (data: any) => ({
-        user_name: data.first_name + data.last_name,
+        userName: data.firstName + data.lastName,
       }),
     });
 
@@ -252,12 +252,12 @@ describe('Call - ', () => {
     });
 
     const dataPromise = RestClient.GET('', {
-      interceptor: ({ user_first_name, user_last_name }: any) => ({ user_name: user_first_name + user_last_name }),
+      interceptor: ({ user_first_name, user_last_name }: any) => ({ userName: user_first_name + user_last_name }),
     });
 
     const data = await dataPromise;
 
-    expect(data).toEqual({ user_name: 'mj' });
+    expect(data).toEqual({ userName: 'mj' });
   });
 
   it('key serilization and camelCase addOn are working well together', async () => {

@@ -275,10 +275,6 @@ function request<ResponseData = {}>(
         responseData = convertJsonKeys(responseData, mergedSerializedNames);
       }
 
-      if (interceptor) {
-        responseData = interceptor(responseData as any);
-      }
-
       try {
         responseData = await settings.responseInterceptor(responseData, statusCode, url, method);
       } catch (e) {
@@ -294,6 +290,10 @@ function request<ResponseData = {}>(
       // AddOns
       for (const addOn of settings.responseInterceptorAddons) {
         responseData = await addOn(responseData, statusCode, url, method);
+      }
+
+      if (interceptor) {
+        responseData = interceptor(responseData as any);
       }
 
       return responseData;
