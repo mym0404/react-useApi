@@ -1433,10 +1433,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@mj-studio/js-util@1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@mj-studio/js-util/-/js-util-1.0.3.tgz#25dd8de7b47115e48fff5e438c755cdf8373569f"
-  integrity sha512-BX36sI48gjfQK2pvRzdvmsXo/nxpZ77dJWkaq7lAACdhiO6suZIVhe2/cPY0ZulIUx88Hl5ATyqpCFsZ66d9tg==
+"@mj-studio/js-util@1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@mj-studio/js-util/-/js-util-1.0.4.tgz#b54a7e30fe46946295dd8bf22bca93869fc01c49"
+  integrity sha512-V/HUyCTjwasWxPzaSlbAdkkY+moThth3OL1d1cgfERupGVYeK1GUz3QppQ3/sX2O/z8MNfr6fgowt/wwDiSIcQ==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"

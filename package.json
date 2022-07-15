@@ -27,7 +27,7 @@
     "react-native": ">=0.59"
   },
   "dependencies": {
-    "@mj-studio/js-util": "1.0.3"
+    "@mj-studio/js-util": "1.0.4"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.17.0",
