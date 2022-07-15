@@ -55,7 +55,9 @@ export type RequestOptionsInterceptor<ResponseData extends JSONCandidate> = (
 
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
 
-export const ResponseInterceptorAddOn: { [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<{}> } = {
+export const ResponseInterceptorAddOn: {
+  [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<JSONCandidate>;
+} = {
   CAMELCASE: async (response) => {
     return camelCaseObject(response);
   },
