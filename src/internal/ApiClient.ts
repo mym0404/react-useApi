@@ -177,7 +177,7 @@ function requestJson(uri: string, requestInit: RequestInit, body?: object): Prom
   return fetch(uri, requestInit);
 }
 
-function request<ResponseData = {}>(
+function request<ResponseData = any>(
   method: RestMethod,
   url: string,
   options: RequestOptions<ResponseData> = { headers: settings.headers },
@@ -248,7 +248,7 @@ function request<ResponseData = {}>(
         };
       }
 
-      let responseData: any = {};
+      let responseData: any;
 
       try {
         const contentType = response.headers.get('Content-Type') || '';
@@ -293,7 +293,7 @@ function request<ResponseData = {}>(
       }
 
       if (interceptor) {
-        responseData = interceptor(responseData as any);
+        responseData = interceptor(responseData);
       }
 
       return responseData;
