@@ -48,7 +48,7 @@ function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
   ]) as Promise<T>;
 }
 
-export type RequestOptionsInterceptor<ResponseData> = (
+export type RequestOptionsInterceptor<ResponseData extends JSONCandidate> = (
   request: RequestOptions<ResponseData>,
   meta: { url: string; method: RestMethod; timout: number; baseUrl: string },
 ) => Promise<RequestOptions<ResponseData>>;
@@ -177,7 +177,7 @@ function requestJson(uri: string, requestInit: RequestInit, body?: object): Prom
   return fetch(uri, requestInit);
 }
 
-function request<ResponseData = any>(
+function request<ResponseData = unknown>(
   method: RestMethod,
   url: string,
   options: RequestOptions<ResponseData> = { headers: settings.headers },
