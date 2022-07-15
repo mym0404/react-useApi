@@ -35,7 +35,7 @@ export type RequestOptions<ResponseData> = {
 };
 
 export type Unsubscribe = () => void;
-export type ApiResult<ResponseData = {}> = Promise<ResponseData>;
+export type ApiResult<ResponseData = any> = Promise<ResponseData>;
 
 function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
   return Promise.race([
@@ -85,7 +85,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   serializedNames: Record<string, string>;
 };
 
-const initialSettings: Settings<{}> = {
+const initialSettings: Settings<any> = {
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
