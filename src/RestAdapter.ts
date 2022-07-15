@@ -5,15 +5,15 @@ type RestAdapter = {
 };
 
 const restClient: RestAdapter = {
-  GET: <ResponseData>(path: string, options?: RequestOptions<ResponseData>) =>
+  GET: <ResponseData = any>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('GET', path, options),
-  POST: <ResponseData>(path: string, options?: RequestOptions<ResponseData>) =>
+  POST: <ResponseData = any>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('POST', path, options),
-  PUT: <ResponseData>(path: string, options?: RequestOptions<ResponseData>) =>
+  PUT: <ResponseData = any>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('PUT', path, options),
-  DELETE: <ResponseData>(path: string, options?: RequestOptions<ResponseData>) =>
+  DELETE: <ResponseData = any>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('DELETE', path, options),
-  PATCH: <ResponseData>(path: string, options?: RequestOptions<ResponseData>) =>
+  PATCH: <ResponseData = any>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('PATCH', path, options),
 };
 
