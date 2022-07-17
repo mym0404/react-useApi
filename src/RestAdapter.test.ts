@@ -494,22 +494,6 @@ describe('Call - ', () => {
       });
   });
 
-  it('[GIVEN] Timeout [WHEN] request api [THEN] promise will be rejected', async (done) => {
-    fetchMock.resetMocks();
-    fetchMock.once(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5400));
-      return { status: 200, headers: { 'Content-Type': 'application/json', 'Content-Length': '3' } };
-    });
-
-    const dataPromise = RestClient.GET('');
-
-    try {
-      await dataPromise;
-    } catch (e) {
-      done();
-    }
-  }, 10000);
-
   it('[GIVEN] requestInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ requestInterceptor: (request) => Promise.resolve(request) });
     const dataPromise = RestClient.GET('');

@@ -37,20 +37,9 @@ export type RequestOptions<ResponseData> = {
 export type Unsubscribe = () => void;
 export type ApiResult<ResponseData = any> = Promise<ResponseData>;
 
-function withTimeout<T>(ms, promise: Promise<T>): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise((resolve, reject) =>
-      setTimeout(() => {
-        reject(new Error('Timeout Error'));
-      }, ms),
-    ),
-  ]) as Promise<T>;
-}
-
 export type RequestOptionsInterceptor<ResponseData extends JSONCandidate> = (
   request: RequestOptions<ResponseData>,
-  meta: { url: string; method: RestMethod; timout: number; baseUrl: string },
+  meta: { url: string; method: RestMethod; baseUrl: string },
 ) => Promise<RequestOptions<ResponseData>>;
 
 type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
@@ -76,7 +65,6 @@ export type ErrorInterceptor = (params: ErrorInterceptorParams) => any;
 export type Settings<ResponseData extends JSONCandidate> = {
   headers: Header;
   baseUrl: string;
-  timeout: number;
   errorInterceptor: ErrorInterceptor;
   requestInterceptor: RequestOptionsInterceptor<ResponseData>;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
@@ -93,7 +81,6 @@ const initialSettings: Settings<any> = {
     Accept: 'application/json',
   },
   baseUrl: '',
-  timeout: 5000,
   errorInterceptor: ({ error }) => error,
   requestInterceptor: (request) => Promise.resolve(request),
   responseInterceptor: (response) => Promise.resolve(response),
@@ -190,11 +177,10 @@ function request<ResponseData = unknown>(
     settings.requestInterceptor(options, {
       baseUrl: settings.baseUrl,
       url: url,
-      timout: settings.timeout,
       method: method,
     });
 
-  return withTimeout(settings.timeout, optionsPromiseThunk()).then(async (options) => {
+  return optionsPromiseThunk().then(async (options) => {
     try {
       const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
 
@@ -260,7 +246,11 @@ function request<ResponseData = unknown>(
         }
 
         if (contentType.includes('application/json')) {
-          responseData = await response.json();
+          try {
+            responseData = await response.json();
+          } catch (e) {
+            responseData = undefined;
+          }
         }
       } catch (e) {
         throw {
