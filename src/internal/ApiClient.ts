@@ -32,6 +32,7 @@ export type RequestOptions<ResponseData> = {
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
   enableMock?: boolean;
+  baseUrl?: string;
 };
 
 export type Unsubscribe = () => void;
@@ -188,7 +189,7 @@ function request<ResponseData = unknown>(
         return mock;
       }
 
-      const constructedUri = constructUriWithQueryParams(url, queryParams, settings.baseUrl);
+      const constructedUri = constructUriWithQueryParams(url, queryParams, options.baseUrl || settings.baseUrl);
 
       const requestInitWithoutBody: RequestInit = {
         headers: headers,
