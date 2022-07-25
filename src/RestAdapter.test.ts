@@ -28,20 +28,6 @@ describe('Call - ', () => {
     mockSimpleResponseOnce();
   });
 
-  it('key serilization is working well', async () => {
-    mockSimpleResponseOnce(null, {
-      userName: 'mj',
-      userAge: 24,
-    });
-
-    const data = await RestClient.GET('', { serializedNames: { userName: 'name', userAge: 'age' } });
-
-    expect(data).toEqual({
-      name: 'mj',
-      age: 24,
-    });
-  });
-
   it("Network error doesn't affect interceptor process", async () => {
     fetchMock.mockReset();
     fetchMock.mockReject(new Error('my error'));
@@ -221,30 +207,6 @@ describe('Call - ', () => {
     expect(data).toEqual({name: 'hello world!'});
   })
 
-  it('REST adapter response interceptor + key serialization + camelCase addOn are working well together', async () => {
-    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
-
-    mockSimpleResponseOnce(null, {
-      user_first_name: 'm',
-      user_last_name: 'j',
-    });
-
-    const dataPromise = RestClient.GET('', {
-      serializedNames: { user_first_name: 'first_name', user_last_name: 'last_name' },
-      interceptor: (data: any) => ({
-        userName: data.firstName + data.lastName,
-      }),
-    });
-
-    const data = await dataPromise;
-
-    expect(data).toEqual({
-      userName: 'mj',
-    });
-
-    clearApiDefaultSettings();
-  });
-
   it('REST adapter response interceptor working well', async () => {
     mockSimpleResponseOnce(null, {
       user_first_name: 'm',
@@ -260,26 +222,6 @@ describe('Call - ', () => {
     expect(data).toEqual({ userName: 'mj' });
   });
 
-  it('key serilization and camelCase addOn are working well together', async () => {
-    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
-
-    mockSimpleResponseOnce(null, {
-      user_name: 'mj',
-      user_age: 24,
-    });
-
-    const dataPromise = RestClient.GET('', { serializedNames: { user_name: 'name_name', user_age: 'age_age' } });
-
-    const data = await dataPromise;
-
-    expect(data).toEqual({
-      nameName: 'mj',
-      ageAge: 24,
-    });
-
-    clearApiDefaultSettings();
-  });
-
   it('serializedNames in settings converts json keys', async () => {
     setApiDefaultSettings({ serializedNames: { before: 'after' } });
 
@@ -293,26 +235,6 @@ describe('Call - ', () => {
 
     expect(data).toEqual({
       after: 1,
-    });
-
-    clearApiDefaultSettings();
-  });
-
-  it('serializedNames request option is merged with serializedNames in settings', async () => {
-    setApiDefaultSettings({ serializedNames: { before: 'after' } });
-
-    mockSimpleResponseOnce(null, {
-      before: 1,
-      before2: 1,
-    });
-
-    const dataPromise = RestClient.GET('', { serializedNames: { before2: 'after2' } });
-
-    const data = await dataPromise;
-
-    expect(data).toEqual({
-      after: 1,
-      after2: 1,
     });
 
     clearApiDefaultSettings();

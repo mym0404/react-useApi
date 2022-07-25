@@ -28,7 +28,6 @@ export type RequestOptions<ResponseData> = {
   body?: object | URLSearchParams;
   files?: ReactNativeFile[];
   headers?: Header;
-  serializedNames?: { [P in string]: string };
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
   enableMock?: boolean;
@@ -183,7 +182,7 @@ function request<ResponseData = unknown>(
 
   return optionsPromiseThunk().then(async (options) => {
     try {
-      const { queryParams, body, files, headers, serializedNames, interceptor, mock, enableMock } = options;
+      const { queryParams, body, files, headers, interceptor, mock, enableMock } = options;
 
       if (enableMock) {
         return mock;
@@ -263,7 +262,7 @@ function request<ResponseData = unknown>(
         };
       }
 
-      const mergedSerializedNames = { ...settings.serializedNames, ...serializedNames };
+      const mergedSerializedNames = settings.serializedNames;
       if (Object.keys(mergedSerializedNames).length) {
         responseData = convertJsonKeys(responseData, mergedSerializedNames);
       }
