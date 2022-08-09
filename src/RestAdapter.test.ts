@@ -1,4 +1,4 @@
-import { ResponseInterceptorAddOn, clearApiDefaultSettings, setApiDefaultSettings } from './index';
+import { clearApiDefaultSettings, setApiDefaultSettings } from './index';
 
 import { FetchMock } from 'jest-fetch-mock';
 import { JSONCandidate } from '@mj-studio/js-util';
@@ -430,29 +430,11 @@ describe('Call - ', () => {
     clearApiDefaultSettings();
   });
 
-  it('[GIVEN] with CAMELCASE response interceptor addon [WHEN] response is snake_case [THEN] response data is camelCase', async () => {
-    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
-    mockSimpleResponseOnce(null, { my_name: 'mj' });
-    const dataPromise = RestClient.GET<{ myName: string }>('');
-    const data = await dataPromise;
-    expect(data.myName).toBe('mj');
-    clearApiDefaultSettings();
-  });
-
   it('[GIVEN] response with array [THEN] call success', async () => {
     mockSimpleResponseOnce(null, [1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
     const dataPromise = RestClient.GET<number[]>('');
     const data = await dataPromise;
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
-  });
-
-  it('[GIVEN] response with array [THEN] call success2', async () => {
-    setApiDefaultSettings({ responseInterceptorAddons: [ResponseInterceptorAddOn.CAMELCASE] });
-    mockSimpleResponseOnce(null, ['2001', '2002', '2003']);
-    const dataPromise = RestClient.GET<string[]>('');
-    const data = await dataPromise;
-    expect(data).toEqual(['2001', '2002', '2003']);
-    clearApiDefaultSettings();
   });
 
   it('[GIVEN] baseUrl set [THEN] call success', async () => {

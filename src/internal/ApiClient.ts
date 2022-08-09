@@ -1,4 +1,4 @@
-import { JSONCandidate, camelCaseObject, convertJsonKeys } from '@mj-studio/js-util';
+import { JSONCandidate, convertJsonKeys } from '@mj-studio/js-util';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 
@@ -42,16 +42,6 @@ export type RequestOptionsInterceptor<ResponseData extends JSONCandidate> = (
   meta: { url: string; method: RestMethod; baseUrl: string },
 ) => Promise<RequestOptions<ResponseData>>;
 
-type ResponseDataInterceptorAddOnNames = 'CAMELCASE';
-
-export const ResponseInterceptorAddOn: {
-  [P in ResponseDataInterceptorAddOnNames]: ResponseDataInterceptor<JSONCandidate>;
-} = {
-  CAMELCASE: async (response) => {
-    return camelCaseObject(response);
-  },
-};
-
 export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   responseData: ResponseData,
   statusCode: number,
@@ -68,7 +58,6 @@ export type Settings<ResponseData extends JSONCandidate> = {
   errorInterceptor: ErrorInterceptor;
   requestInterceptor: RequestOptionsInterceptor<ResponseData>;
   responseInterceptor: ResponseDataInterceptor<ResponseData>;
-  responseInterceptorAddons: ResponseDataInterceptor<ResponseData>[];
   responseCodeWhiteListRange: { minInclude: number; maxExclude: number };
   responseCodeWhiteList: number[];
   responseCodeBlackList: number[];
@@ -84,7 +73,6 @@ const initialSettings: Settings<any> = {
   errorInterceptor: ({ error }) => error,
   requestInterceptor: (request) => Promise.resolve(request),
   responseInterceptor: (response) => Promise.resolve(response),
-  responseInterceptorAddons: [],
   responseCodeWhiteListRange: { minInclude: 200, maxExclude: 300 },
   responseCodeWhiteList: [],
   responseCodeBlackList: [],
@@ -277,11 +265,6 @@ function request<ResponseData = unknown>(
           url,
           statusCode,
         };
-      }
-
-      // AddOns
-      for (const addOn of settings.responseInterceptorAddons) {
-        responseData = await addOn(responseData, statusCode, url, method);
       }
 
       if (interceptor) {

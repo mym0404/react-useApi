@@ -10,7 +10,6 @@ export {
   RequestOptions,
   ContentType,
   Header,
-  ResponseInterceptorAddOn,
   RequestOptionsInterceptor,
   ResponseDataInterceptor,
   Settings,
