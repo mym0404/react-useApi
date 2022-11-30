@@ -32,6 +32,7 @@ export type RequestOptions<ResponseData> = {
   mock?: ResponseData;
   enableMock?: boolean;
   baseUrl?: string;
+  meta?: any;
 };
 
 export type Unsubscribe = () => void;
