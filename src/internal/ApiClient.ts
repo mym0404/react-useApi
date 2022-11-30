@@ -176,7 +176,13 @@ function request<ResponseData = unknown>(
         return mock;
       }
 
-      const constructedUri = constructUriWithQueryParams(url, queryParams, options.baseUrl || settings.baseUrl);
+      const baseUrl =
+        typeof options.baseUrl === 'string'
+          ? options.baseUrl
+          : typeof settings.baseUrl === 'string'
+          ? settings.baseUrl
+          : undefined;
+      const constructedUri = constructUriWithQueryParams(url, queryParams, baseUrl);
 
       const requestInitWithoutBody: RequestInit = {
         headers: headers,
