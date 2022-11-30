@@ -33,6 +33,7 @@ export type RequestOptions<ResponseData> = {
   enableMock?: boolean;
   baseUrl?: string;
   meta?: any;
+  useRawUrl?: boolean;
 };
 
 export type Unsubscribe = () => void;
@@ -183,7 +184,7 @@ function request<ResponseData = unknown>(
           : typeof settings.baseUrl === 'string'
           ? settings.baseUrl
           : undefined;
-      const constructedUri = constructUriWithQueryParams(url, queryParams, baseUrl);
+      const constructedUri = options.useRawUrl ? url : constructUriWithQueryParams(url, queryParams, baseUrl);
 
       const requestInitWithoutBody: RequestInit = {
         headers: headers,
