@@ -1,7 +1,7 @@
-import { clearApiDefaultSettings, setApiDefaultSettings } from './index';
+import {clearApiDefaultSettings, setApiDefaultSettings} from './index';
 
-import { FetchMock } from 'jest-fetch-mock';
-import { JSONCandidate } from '@mj-studio/js-util';
+import {FetchMock} from 'jest-fetch-mock';
+import {JSONCandidate} from '@mj-studio/js-util';
 import RestClient from './RestAdapter';
 
 jest.useRealTimers();
@@ -335,7 +335,7 @@ describe('Call - ', () => {
       .catch((e) => {
         expect(e.name).toBe('Error');
         expect(e.message).toBe(
-          "Status Code [400] doesn't exist in responseCodeWhiteListRange [200, 300). If you want to include 400 to white list, use responseCodeWhiteList settings in setApiDefaultSettings()",
+          "Network Code Denied"
         );
       });
   });
@@ -392,7 +392,7 @@ describe('Call - ', () => {
       await dataPromise;
     } catch ({ name, message }) {
       expect(name).toBe('Error');
-      expect(message).toBe('Status Code [200] exists in responseCodeBlackList [200,100]');
+      expect(message).toBe('Network Code Denied');
     }
 
     clearApiDefaultSettings();

@@ -211,20 +211,12 @@ function request<ResponseData = unknown>(
       const whiteList = settings.responseCodeWhiteList;
       const blackList = settings.responseCodeBlackList;
 
-      if ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) {
+      if (
+        ((statusCode < min || statusCode >= max) && !whiteList.includes(statusCode)) ||
+        blackList.includes(statusCode)
+      ) {
         throw {
-          error: new Error(
-            // eslint-disable-next-line max-len
-            `Status Code [${statusCode}] doesn't exist in responseCodeWhiteListRange [${min}, ${max}). If you want to include ${statusCode} to white list, use responseCodeWhiteList settings in setApiDefaultSettings()`,
-          ),
-          body,
-          queryParams,
-          url,
-          statusCode,
-        };
-      } else if (blackList.includes(statusCode)) {
-        throw {
-          error: new Error(`Status Code [${statusCode}] exists in responseCodeBlackList [${blackList}]`),
+          error: new Error(`Network Code Denied`),
           body,
           queryParams,
           url,
