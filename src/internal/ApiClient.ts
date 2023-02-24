@@ -49,6 +49,7 @@ export type ResponseDataInterceptor<ResponseData extends JSONCandidate> = (
   statusCode: number,
   url: string,
   method: RestMethod,
+  meta?: any,
 ) => Promise<ResponseData>;
 
 export type ErrorInterceptorParams = { error: any; statusCode?: number; url?: string; body?: any; queryParams?: any };
@@ -172,7 +173,7 @@ function request<ResponseData = unknown>(
 
   return optionsPromiseThunk().then(async (options) => {
     try {
-      const { queryParams, body, files, headers, interceptor, mock, enableMock } = options;
+      const { queryParams, body, files, headers, interceptor, mock, enableMock, meta: requestMeta } = options;
 
       if (enableMock) {
         return mock;
@@ -256,7 +257,7 @@ function request<ResponseData = unknown>(
       }
 
       try {
-        responseData = await settings.responseInterceptor(responseData, statusCode, url, method);
+        responseData = await settings.responseInterceptor(responseData, statusCode, url, method, requestMeta);
       } catch (e) {
         throw {
           error: e,

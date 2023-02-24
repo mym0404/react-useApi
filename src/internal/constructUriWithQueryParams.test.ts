@@ -1,4 +1,4 @@
-import {constructUriWithQueryParams} from './constructUriWithQueryParams';
+import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 
 describe('constructUriWithQueryParams', () => {
   it('without params should be same', () => {
@@ -9,7 +9,7 @@ describe('constructUriWithQueryParams', () => {
 
   it('with params should be added params to uri', () => {
     const uri = 'https://www.google.com/';
-    expect(constructUriWithQueryParams(uri, {name: 'dooboo', password: 'idk'})).toBe(
+    expect(constructUriWithQueryParams(uri, { name: 'dooboo', password: 'idk' })).toBe(
       'https://www.google.com/?name=dooboo&password=idk',
     );
   });
@@ -22,7 +22,7 @@ describe('constructUriWithQueryParams', () => {
 
   it('same params should be merged with second argument data', () => {
     const uri = 'https://www.google.com/?name=dooboo';
-    const queryParams = {name: 'mym0404'};
+    const queryParams = { name: 'mym0404' };
 
     expect(constructUriWithQueryParams(uri, queryParams)).toBe('https://www.google.com/?name=mym0404');
   });

@@ -1,7 +1,7 @@
-import {clearApiDefaultSettings, setApiDefaultSettings} from './index';
+import { clearApiDefaultSettings, setApiDefaultSettings } from './index';
 
-import {FetchMock} from 'jest-fetch-mock';
-import {JSONCandidate} from '@mj-studio/js-util';
+import { FetchMock } from 'jest-fetch-mock';
+import { JSONCandidate } from '@mj-studio/js-util';
 import RestClient from './RestAdapter';
 
 jest.useRealTimers();
@@ -9,6 +9,7 @@ jest.useRealTimers();
 declare const fetchMock: FetchMock;
 function mockSimpleResponseOnce(uri?: string | RegExp, body?: JSONCandidate): void {
   fetchMock.resetMocks();
+
   const simpleBody = body ? JSON.stringify(body) : JSON.stringify({ success: true });
 
   if (uri) {
@@ -26,6 +27,23 @@ describe('Call - ', () => {
   beforeEach(() => {
     fetchMock.resetMocks();
     mockSimpleResponseOnce();
+  });
+
+  it('Can retrieve meta of request in response interceptor', async () => {
+    setApiDefaultSettings({
+      responseInterceptor: async (response: any, _, __, ___, meta) => {
+        expect(meta.name).toBe('mj');
+      },
+    });
+
+    const dataPromise = RestClient.GET('', {
+      meta: { name: 'mj' },
+    });
+
+    await dataPromise;
+
+    clearApiDefaultSettings();
+    expect.assertions(1);
   });
 
   it("Network error doesn't affect interceptor process", async () => {
@@ -61,6 +79,7 @@ describe('Call - ', () => {
       interceptor: (data: any) => {
         expect(data).toBeTruthy();
         expect(data).toBeTruthy();
+
         return {
           user_name: data.first_name + data.last_name,
         };
@@ -201,11 +220,11 @@ describe('Call - ', () => {
       enableMock: true,
       mock: {
         name: 'hello world!',
-      }
-    })
+      },
+    });
     const data = await dataPromise;
-    expect(data).toEqual({name: 'hello world!'});
-  })
+    expect(data).toEqual({ name: 'hello world!' });
+  });
 
   it('REST adapter response interceptor working well', async () => {
     mockSimpleResponseOnce(null, {
@@ -293,7 +312,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] custom errorInterceptor is set [WHEN] call [THEN] custom exception data is caught', async () => {
     setApiDefaultSettings({
-      errorInterceptor: function () {
+      errorInterceptor: () => {
         return { code: 444, message: 'satan' };
       },
     });
@@ -307,6 +326,7 @@ describe('Call - ', () => {
         }),
       };
     });
+
     const dataPromise = RestClient.GET('');
 
     expect.assertions(2);
@@ -326,18 +346,15 @@ describe('Call - ', () => {
     fetchMock.once(async () => {
       return { status: 400, body: JSON.stringify({}) };
     });
+
     const dataPromise = RestClient.GET('');
 
     expect.assertions(2);
 
-    return dataPromise
-      .then()
-      .catch((e) => {
-        expect(e.name).toBe('Error');
-        expect(e.message).toBe(
-          "Network Code Denied"
-        );
-      });
+    return dataPromise.then().catch((e) => {
+      expect(e.name).toBe('Error');
+      expect(e.message).toBe('Network Code Denied');
+    });
   });
 
   it('[GIVEN] network response status code = 400 & responseCodeWhiteListRange [200, 500) [THEN] call success', async () => {
@@ -351,6 +368,7 @@ describe('Call - ', () => {
         headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
       };
     });
+
     const dataPromise = RestClient.GET<{ name: string }>('');
 
     const data = await dataPromise;
@@ -370,6 +388,7 @@ describe('Call - ', () => {
         headers: { 'Content-Type': 'application/json', 'Content-Length': '3' },
       };
     });
+
     const dataPromise = RestClient.GET<{ name: string }>('');
 
     const data = await dataPromise;
@@ -385,6 +404,7 @@ describe('Call - ', () => {
     fetchMock.once(async () => {
       return { status: 200, body: JSON.stringify({ name: 'mj' }) };
     });
+
     const dataPromise = RestClient.GET<{ name: string }>('');
 
     expect.assertions(2);
@@ -418,6 +438,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] requestInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ requestInterceptor: (request) => Promise.resolve(request) });
+
     const dataPromise = RestClient.GET('');
     await dataPromise;
     clearApiDefaultSettings();
@@ -425,6 +446,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] responseInterceptor is a Promise [THEN] call success', async () => {
     setApiDefaultSettings({ responseInterceptor: (response) => Promise.resolve(response) });
+
     const dataPromise = RestClient.GET('');
     await dataPromise;
     clearApiDefaultSettings();
@@ -432,6 +454,7 @@ describe('Call - ', () => {
 
   it('[GIVEN] response with array [THEN] call success', async () => {
     mockSimpleResponseOnce(null, [1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
+
     const dataPromise = RestClient.GET<number[]>('');
     const data = await dataPromise;
     expect(data).toEqual([1, 2, { name: 'mj' }, 4, [1, 2, 3, 4, 5]]);
@@ -440,6 +463,7 @@ describe('Call - ', () => {
   it('[GIVEN] baseUrl set [THEN] call success', async () => {
     setApiDefaultSettings({ baseUrl: 'https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/' });
     mockSimpleResponseOnce('https://virtserver.swaggerhub.com/freedom07/Mathking/1.1/getMyName', { my_name: 'mj' });
+
     const dataPromise = RestClient.GET<{ my_name: string }>('getMyName');
     const data = await dataPromise;
     expect(data.my_name).toBe('mj');
@@ -482,6 +506,7 @@ describe('Call - ', () => {
     it('[GIVEN] application/x-www-form-urlencoded;charset=UTF-8 [WHEN] by URLSearchParams body [THEN] should be success', async () => {
       const body = new URLSearchParams();
       body.set('name', 'dooboo');
+
       const dataPromise = RestClient[restMethod]<{ success: boolean }>('', {
         body,
       });
@@ -564,6 +589,4 @@ describe('Call - ', () => {
       }
     });
   });
-
-
 });
