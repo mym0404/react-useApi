@@ -30,6 +30,7 @@ export type RequestOptions<ResponseData> = {
   headers?: Header;
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
+  mockError?: any;
   enableMock?: boolean;
   baseUrl?: string;
   meta?: any;
@@ -173,9 +174,23 @@ function request<ResponseData = unknown>(
 
   return optionsPromiseThunk().then(async (options) => {
     try {
-      const { queryParams, body, files, headers, interceptor, mock, enableMock, meta: requestMeta } = options;
+      const {
+        queryParams,
+        body,
+        files,
+        headers,
+        interceptor,
+        mock,
+        enableMock,
+        meta: requestMeta,
+        mockError,
+      } = options;
 
       if (enableMock) {
+        if (mockError) {
+          throw mockError;
+        }
+
         return mock;
       }
 
