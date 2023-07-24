@@ -186,9 +186,16 @@ function request<ResponseData = unknown>(
         mockError,
       } = options;
 
+      // Mocking for testing
       if (enableMock) {
         if (mockError) {
-          throw mockError;
+          throw {
+            error: mockError,
+            body,
+            queryParams,
+            url,
+            statusCode: 400,
+          };
         }
 
         return mock;
