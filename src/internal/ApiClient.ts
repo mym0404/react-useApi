@@ -2,7 +2,7 @@ import { JSONCandidate, convertJsonKeys } from '@mj-studio/js-util';
 
 import { constructUriWithQueryParams } from './constructUriWithQueryParams';
 
-export type RestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+export type RestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS' | 'HEAD';
 export type Header = { [P in string]: string } & {
   'Content-Type'?: ContentType;
   Accept?: ContentType;
@@ -299,7 +299,7 @@ function request<ResponseData = unknown>(
       if (typeof e.url === 'string') {
         const { error, body, queryParams, url, statusCode } = e;
         throw settings.errorInterceptor({
-          error: error,
+          error,
           body,
           queryParams,
           url,

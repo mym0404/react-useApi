@@ -13,4 +13,5 @@ export {
   RequestOptionsInterceptor,
   ResponseDataInterceptor,
   Settings,
+  default as request,
 } from './internal/ApiClient';

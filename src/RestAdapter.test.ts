@@ -226,6 +226,19 @@ describe('Call - ', () => {
     expect(data).toEqual({ name: 'hello world!' });
   });
 
+  it('mock error is returnned if enabledMock = true', async () => {
+    const dataPromise = RestClient.GET('123', {
+      enableMock: true,
+      mockError: { name: 'error' },
+    });
+
+    try {
+      await dataPromise;
+    } catch (e) {
+      expect(e.name).toBe('error');
+    }
+  });
+
   it('REST adapter response interceptor working well', async () => {
     mockSimpleResponseOnce(null, {
       user_first_name: 'm',

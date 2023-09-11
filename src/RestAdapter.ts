@@ -18,6 +18,10 @@ const restClient: RestAdapter = {
     request<ResponseData>('DELETE', path, options),
   PATCH: <ResponseData = unknown>(path: string, options?: RequestOptions<ResponseData>) =>
     request<ResponseData>('PATCH', path, options),
+  HEAD: <ResponseData = unknown>(path: string, options?: RequestOptions<ResponseData>) =>
+    request<ResponseData>('HEAD', path, options),
+  OPTIONS: <ResponseData = unknown>(path: string, options?: RequestOptions<ResponseData>) =>
+    request<ResponseData>('OPTIONS', path, options),
 };
 
 export const { GET, POST, PUT, DELETE, PATCH } = restClient;
