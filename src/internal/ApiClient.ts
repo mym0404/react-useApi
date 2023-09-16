@@ -306,7 +306,7 @@ function request<ResponseData = unknown>(
           statusCode,
         });
       } else {
-        throw settings.errorInterceptor({ error: e });
+        throw settings.errorInterceptor({ error: e, url, body: options.body, queryParams: options.queryParams });
       }
     }
   }) as any;
