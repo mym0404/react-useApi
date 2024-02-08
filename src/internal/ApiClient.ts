@@ -212,6 +212,7 @@ function request<ResponseData = unknown>(
       const requestInitWithoutBody: RequestInit = {
         headers: headers,
         method: method,
+        credentials: 'include',
       };
 
       let responsePromise: Promise<Response>;
