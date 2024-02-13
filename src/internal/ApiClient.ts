@@ -35,6 +35,7 @@ export type RequestOptions<ResponseData> = {
   baseUrl?: string;
   meta?: any;
   useRawUrl?: boolean;
+  credentials?: RequestCredentials_;
 };
 
 export type Unsubscribe = () => void;
@@ -184,6 +185,7 @@ function request<ResponseData = unknown>(
         enableMock,
         meta: requestMeta,
         mockError,
+        credentials,
       } = options;
 
       // Mocking for testing
@@ -212,7 +214,7 @@ function request<ResponseData = unknown>(
       const requestInitWithoutBody: RequestInit = {
         headers: headers,
         method: method,
-        credentials: 'include',
+        credentials,
       };
 
       let responsePromise: Promise<Response>;
