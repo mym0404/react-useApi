@@ -67,6 +67,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   responseCodeWhiteList: number[];
   responseCodeBlackList: number[];
   serializedNames: Record<string, string>;
+  credentials?: RequestCredentials_;
 };
 
 const initialSettings: Settings<any> = {
@@ -165,6 +166,7 @@ function request<ResponseData = unknown>(
   options: RequestOptions<ResponseData> = { headers: settings.headers },
 ): ApiResult<ResponseData> {
   options.headers = options.headers || settings.headers;
+  options.credentials = options.credentials || settings.credentials;
 
   const optionsPromiseThunk = () =>
     settings.requestInterceptor(options, {
