@@ -166,7 +166,7 @@ function request<ResponseData = unknown>(
   options: RequestOptions<ResponseData> = { headers: settings.headers },
 ): ApiResult<ResponseData> {
   options.headers = options.headers || settings.headers;
-  options.credentials = options.credentials || settings.credentials;
+  options.credentials = options.credentials ?? settings.credentials;
 
   const optionsPromiseThunk = () =>
     settings.requestInterceptor(options, {
