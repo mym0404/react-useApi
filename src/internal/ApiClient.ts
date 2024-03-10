@@ -139,9 +139,7 @@ function requestFormUrlEncoded(
   if (body instanceof URLSearchParams) {
     encodedBody = body;
   } else if (body) {
-    Object.entries(body).forEach(([key, value]) => {
-      encodedBody.set(encodeURIComponent(key), encodeURIComponent(value));
-    });
+    Object.keys(body).forEach((key) => encodedBody.append(key, body[key]));
   }
 
   requestInit.headers && (requestInit.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8');
