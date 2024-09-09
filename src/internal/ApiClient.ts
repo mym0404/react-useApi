@@ -21,12 +21,14 @@ export type ReactNativeFile = {
 export type ContentType =
   | 'application/json'
   | 'application/x-www-form-urlencoded;charset=UTF-8'
+  | 'application/x-www-form-urlencoded'
   | 'multipart/form-data';
 
 export type RequestOptions<ResponseData> = {
   queryParams?: object;
   body?: object | URLSearchParams;
   files?: ReactNativeFile[];
+  formData?: {} & FormData;
   headers?: Header;
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
@@ -112,9 +114,8 @@ function upload(
   requestInit: RequestInit,
   files: ReactNativeFile[] = [],
   body: object = {},
+  formData: FormData & {} = new FormData(),
 ): Promise<Response> {
-  const formData = new FormData();
-
   Object.entries(body).forEach(([key, value]) => {
     formData.append(key, JSON.stringify(value));
   });
@@ -186,6 +187,7 @@ function request<ResponseData = unknown>(
         meta: requestMeta,
         mockError,
         credentials,
+        formData,
       } = options;
 
       // Mocking for testing
@@ -219,7 +221,7 @@ function request<ResponseData = unknown>(
 
       let responsePromise: Promise<Response>;
 
-      if (headers?.['Content-Type']?.includes('form-data') || (method === 'POST' && files)) {
+      if (headers?.['Content-Type']?.includes('form-data') || files || formData) {
         responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
       } else if (headers?.['Content-Type']?.includes('x-www-form-urlencoded') || body instanceof URLSearchParams) {
         responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
