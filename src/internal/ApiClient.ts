@@ -9,7 +9,7 @@ export type Header = { [P in string]: string } & {
   Authorization?: string;
 };
 
-export type ReactNativeFile = {
+export type FormDataFile = {
   key: string;
   file: {
     name: string;
@@ -26,7 +26,7 @@ export type ContentType =
 export type RequestOptions<ResponseData> = {
   queryParams?: object;
   body?: object | URLSearchParams;
-  files?: ReactNativeFile[];
+  files?: FormDataFile[];
   headers?: Header;
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
@@ -110,7 +110,7 @@ export function getApiDefaultSettings(): Partial<typeof settings> {
 function upload(
   uri: string,
   requestInit: RequestInit,
-  files: ReactNativeFile[] = [],
+  files: FormDataFile[] = [],
   body: object = {},
 ): Promise<Response> {
   const formData = new FormData();
@@ -219,12 +219,9 @@ function request<ResponseData = unknown>(
 
       let responsePromise: Promise<Response>;
 
-      if (headers?.['Content-Type'] === 'multipart/form-data' || (method === 'POST' && files)) {
+      if (headers?.['Content-Type']?.includes('form-data') || (method === 'POST' && files)) {
         responsePromise = upload(constructedUri, requestInitWithoutBody, files, body);
-      } else if (
-        headers?.['Content-Type'] === 'application/x-www-form-urlencoded;charset=UTF-8' ||
-        body instanceof URLSearchParams
-      ) {
+      } else if (headers?.['Content-Type']?.includes('x-www-form-urlencoded') || body instanceof URLSearchParams) {
         responsePromise = requestFormUrlEncoded(constructedUri, requestInitWithoutBody, body);
       } else {
         responsePromise = requestJson(constructedUri, requestInitWithoutBody, body);
