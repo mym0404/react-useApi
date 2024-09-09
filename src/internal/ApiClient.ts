@@ -9,7 +9,7 @@ export type Header = { [P in string]: string } & {
   Authorization?: string;
 };
 
-export type FormDataFile = {
+export type ReactNativeFile = {
   key: string;
   file: {
     name: string;
@@ -26,7 +26,7 @@ export type ContentType =
 export type RequestOptions<ResponseData> = {
   queryParams?: object;
   body?: object | URLSearchParams;
-  files?: FormDataFile[];
+  files?: ReactNativeFile[];
   headers?: Header;
   interceptor?: (json: any) => ResponseData;
   mock?: ResponseData;
@@ -35,7 +35,7 @@ export type RequestOptions<ResponseData> = {
   baseUrl?: string;
   meta?: any;
   useRawUrl?: boolean;
-  credentials?: RequestCredentials_;
+  credentials?: RequestCredentials;
 };
 
 export type Unsubscribe = () => void;
@@ -67,7 +67,7 @@ export type Settings<ResponseData extends JSONCandidate> = {
   responseCodeWhiteList: number[];
   responseCodeBlackList: number[];
   serializedNames: Record<string, string>;
-  credentials?: RequestCredentials_;
+  credentials?: RequestCredentials;
 };
 
 const initialSettings: Settings<any> = {
@@ -110,7 +110,7 @@ export function getApiDefaultSettings(): Partial<typeof settings> {
 function upload(
   uri: string,
   requestInit: RequestInit,
-  files: FormDataFile[] = [],
+  files: ReactNativeFile[] = [],
   body: object = {},
 ): Promise<Response> {
   const formData = new FormData();
@@ -120,7 +120,7 @@ function upload(
   });
 
   Object.entries(files).forEach(([key, file]) => {
-    formData.append(key, file);
+    formData.append(key, file as any /* this is only valid in react native */);
   });
 
   requestInit.headers && (requestInit.headers['Content-Type'] = 'multipart/form-data');

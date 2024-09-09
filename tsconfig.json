@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["es2020"],
+    "lib": ["ESNext","DOM"],
     "jsx": "react",
     "noResolve": false,
     "noImplicitAny": false,

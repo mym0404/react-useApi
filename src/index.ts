@@ -6,7 +6,7 @@ export {
   ApiResult,
   RestMethod,
   Unsubscribe,
-  FormDataFile,
+  ReactNativeFile,
   RequestOptions,
   ContentType,
   Header,
