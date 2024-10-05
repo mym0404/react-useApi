@@ -1,4 +1,4 @@
-### Version of dooboo-hooks
+### Version of http-client
 
 ### Version of react-native
 
